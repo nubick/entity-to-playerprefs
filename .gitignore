@@ -1,0 +1,7 @@
+EntityToPlayerPrefs/Library/
+EntityToPlayerPrefs/Temp/
+EntityToPlayerPrefs/obj/
+*.suo
+*.csproj
+*.sln
+*.userprefs
