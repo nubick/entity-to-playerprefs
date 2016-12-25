@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using System;
 
-namespace Assets.Scripts.Utils.PlayerPrefs.Editor
+namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 {
     public class EntityToPlayerPrefsEditor : EditorWindow
     {
@@ -55,7 +55,7 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
                 {
                     object ppValue = registryKey.GetValue(valueName);
                     string ppKey = valueName.Remove(valueName.LastIndexOf("_"));
-                    if (UnityEngine.PlayerPrefs.HasKey(ppKey))
+                    if (PlayerPrefs.HasKey(ppKey))
                         values.Add(ppKey, ppValue);
                 }
             }
@@ -70,7 +70,7 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
 			Dictionary<string, object> plistDic = (Dictionary<string, object>) PlistCS.Plist.readPlist(fullPath);
 
 			foreach(string key in plistDic.Keys.ToArray())
-				if(!UnityEngine.PlayerPrefs.HasKey(key))
+				if(!PlayerPrefs.HasKey(key))
 					plistDic.Remove(key);
 
 			return plistDic;
@@ -165,7 +165,7 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
             if (GUILayout.Button("Delete", GUILayout.Width(50)))
             {
                 DeleteEntity(entity);
-                UnityEngine.PlayerPrefs.Save();
+                PlayerPrefs.Save();
                 Refresh();
             }
             GUILayout.EndHorizontal();
@@ -182,12 +182,12 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
 			if (value is byte[] ||	//string on Windows
 				value is string)	//string on MacOS
 			{
-                string oldValue = UnityEngine.PlayerPrefs.GetString(ppKey);
+                string oldValue = PlayerPrefs.GetString(ppKey);
                 string newValue = EditorGUILayout.TextField(oldValue);
                 if (newValue != oldValue)
                 {
-                    UnityEngine.PlayerPrefs.SetString(ppKey, newValue);
-                    UnityEngine.PlayerPrefs.Save();
+                    PlayerPrefs.SetString(ppKey, newValue);
+                    PlayerPrefs.Save();
                     Refresh();
                 }
             }
@@ -195,23 +195,23 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
             {
                 if (IsInt(ppKey))
                 {
-                    int oldValue = UnityEngine.PlayerPrefs.GetInt(ppKey);
+                    int oldValue = PlayerPrefs.GetInt(ppKey);
                     int newValue = EditorGUILayout.IntField(oldValue);
                     if (newValue != oldValue)
                     {
-                        UnityEngine.PlayerPrefs.SetInt(ppKey, newValue);
-                        UnityEngine.PlayerPrefs.Save();
+                        PlayerPrefs.SetInt(ppKey, newValue);
+                        PlayerPrefs.Save();
                         Refresh();
                     }
                 }
                 else
                 {
-                    float oldValue = UnityEngine.PlayerPrefs.GetFloat(ppKey);
+                    float oldValue = PlayerPrefs.GetFloat(ppKey);
                     float newValue = EditorGUILayout.FloatField(oldValue);
                     if (Mathf.Approximately(oldValue, newValue))
                     {
-                        UnityEngine.PlayerPrefs.SetFloat(ppKey, newValue);
-                        UnityEngine.PlayerPrefs.Save();
+                        PlayerPrefs.SetFloat(ppKey, newValue);
+                        PlayerPrefs.Save();
                         Refresh();
                     }
                 }
@@ -223,8 +223,8 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
 
             if (GUILayout.Button("X", GUILayout.Width(50)))
             {
-                UnityEngine.PlayerPrefs.DeleteKey(ppKey);
-                UnityEngine.PlayerPrefs.Save();
+                PlayerPrefs.DeleteKey(ppKey);
+                PlayerPrefs.Save();
                 Refresh();
             }
 
@@ -233,11 +233,11 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
 
         private bool IsInt(string ppKey)
         {
-            int intValue = UnityEngine.PlayerPrefs.GetInt(ppKey);
+            int intValue = PlayerPrefs.GetInt(ppKey);
             if (intValue != 0)
                 return true;
 
-            float floatValue = UnityEngine.PlayerPrefs.GetFloat(ppKey);
+            float floatValue = PlayerPrefs.GetFloat(ppKey);
             if (!Mathf.Approximately(floatValue, 0f))
                 return false;
 
@@ -247,7 +247,7 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
         private void DeleteEntity(PPEntity entity)
         {
             foreach (string ppKey in entity.PPKeys.Values)
-                UnityEngine.PlayerPrefs.DeleteKey(ppKey);
+                PlayerPrefs.DeleteKey(ppKey);
         }
 
         private void DrawBottomPanel()
@@ -270,7 +270,7 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
                     if (_selectedType == NotEntitiesTab) 
                     {
                         foreach (string ppKey in GetNoEntitiesKeys())
-                            UnityEngine.PlayerPrefs.DeleteKey(ppKey);
+                            PlayerPrefs.DeleteKey(ppKey);
                     }
                     else
                     {
@@ -279,7 +279,7 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
                         _selectedType = NotEntitiesTab;
                     }
 
-                    UnityEngine.PlayerPrefs.Save();
+                    PlayerPrefs.Save();
                     Refresh();
                 }
             }
@@ -291,8 +291,8 @@ namespace Assets.Scripts.Utils.PlayerPrefs.Editor
             {
                 if (EditorUtility.DisplayDialog("Delete all records", "All records on all tabs will be deleted!", "Delete", "Cancel"))
                 {
-                    UnityEngine.PlayerPrefs.DeleteAll();
-                    UnityEngine.PlayerPrefs.Save();
+                    PlayerPrefs.DeleteAll();
+                    PlayerPrefs.Save();
                     Refresh();
                     _selectedType = NotEntitiesTab;
                 }

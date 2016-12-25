@@ -1,7 +1,7 @@
 ﻿
 using System.Collections.Generic;
 
-namespace Assets.Scripts.Utils.PlayerPrefs.Editor
+namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 {
     public class PPEntity
     {

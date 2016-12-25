@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Assets.Scripts.Utils.PlayerPrefs
+namespace Assets.Plugins.EntityToPlayerPrefs
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
     public class PlayerPrefsFieldAttribute : Attribute

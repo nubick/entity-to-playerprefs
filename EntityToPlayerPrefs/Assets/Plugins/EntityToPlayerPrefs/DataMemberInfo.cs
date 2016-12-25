@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Assets.Scripts.Utils.PlayerPrefs
+namespace Assets.Plugins.EntityToPlayerPrefs
 {
     public class DataMemberInfo
     {

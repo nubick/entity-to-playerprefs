@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
-namespace Assets.Scripts.Utils.PlayerPrefs
+namespace Assets.Plugins.EntityToPlayerPrefs
 {
     public class PlayerPrefsMapper
     {
@@ -69,26 +70,26 @@ namespace Assets.Scripts.Utils.PlayerPrefs
 
                 if (dataMemberInfo.GetMemberInfoType() == typeof (string))
                 {
-                    UnityEngine.PlayerPrefs.SetString(fieldKey, dataMemberInfo.GetValue<string>(entity));
+                    PlayerPrefs.SetString(fieldKey, dataMemberInfo.GetValue<string>(entity));
                 }
                 else if (dataMemberInfo.GetMemberInfoType() == typeof(bool))
                 {
-                    UnityEngine.PlayerPrefs.SetString(fieldKey, dataMemberInfo.GetValue<bool>(entity).ToString());
+                    PlayerPrefs.SetString(fieldKey, dataMemberInfo.GetValue<bool>(entity).ToString());
                 }
                 else if (dataMemberInfo.GetMemberInfoType() == typeof (int))
                 {
-                    UnityEngine.PlayerPrefs.SetInt(fieldKey, dataMemberInfo.GetValue<int>(entity));
+                    PlayerPrefs.SetInt(fieldKey, dataMemberInfo.GetValue<int>(entity));
                 }
                 else if (dataMemberInfo.GetMemberInfoType() == typeof (float))
                 {
-                    UnityEngine.PlayerPrefs.SetFloat(fieldKey, dataMemberInfo.GetValue<float>(entity));
+                    PlayerPrefs.SetFloat(fieldKey, dataMemberInfo.GetValue<float>(entity));
                 }
                 else
                 {
                     throw new Exception("Not supported filed type: " + dataMemberInfo.GetMemberInfoType());
                 }
             }
-            UnityEngine.PlayerPrefs.Save();
+            PlayerPrefs.Save();
         }
 
         public static void Load(object entity)
@@ -104,26 +105,26 @@ namespace Assets.Scripts.Utils.PlayerPrefs
             foreach (DataMemberInfo dataMemberInfo in dataMemberInfos)
             {
                 string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
-                if (UnityEngine.PlayerPrefs.HasKey(fieldKey))
+                if (PlayerPrefs.HasKey(fieldKey))
                 {
                     if (dataMemberInfo.GetMemberInfoType() == typeof(string))
                     {
-                        string strValue = UnityEngine.PlayerPrefs.GetString(fieldKey);
+                        string strValue = PlayerPrefs.GetString(fieldKey);
                         dataMemberInfo.SetValue(entity, strValue);
                     }
                     else if (dataMemberInfo.GetMemberInfoType() == typeof(bool))
                     {
-                        bool boolValue = bool.Parse(UnityEngine.PlayerPrefs.GetString(fieldKey));
+                        bool boolValue = bool.Parse(PlayerPrefs.GetString(fieldKey));
                         dataMemberInfo.SetValue(entity, boolValue);
                     }
                     else if (dataMemberInfo.GetMemberInfoType() == typeof(int))
                     {
-                        int intValue = UnityEngine.PlayerPrefs.GetInt(fieldKey);
+                        int intValue = PlayerPrefs.GetInt(fieldKey);
                         dataMemberInfo.SetValue(entity, intValue);
                     }
                     else if (dataMemberInfo.GetMemberInfoType() == typeof (float))
                     {
-                        float floatValue = UnityEngine.PlayerPrefs.GetFloat(fieldKey);
+                        float floatValue = PlayerPrefs.GetFloat(fieldKey);
                         dataMemberInfo.SetValue(entity, floatValue);
                     }
                     else
@@ -161,8 +162,8 @@ namespace Assets.Scripts.Utils.PlayerPrefs
         {
             List<string> entityKeys = GetEntityKeys(entity);
             foreach (string key in entityKeys)
-                UnityEngine.PlayerPrefs.DeleteKey(key);
-            UnityEngine.PlayerPrefs.Save();
+                PlayerPrefs.DeleteKey(key);
+            PlayerPrefs.Save();
         }
 
         private static List<string> GetEntityKeys(object entity)
