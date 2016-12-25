@@ -67,26 +67,32 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             foreach (DataMemberInfo dataMemberInfo in dataMemberInfos)
             {
                 string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
-
-                if (dataMemberInfo.GetMemberInfoType() == typeof (string))
+                Type fieldType = dataMemberInfo.GetMemberInfoType();
+                if (fieldType == typeof (string))
                 {
                     PlayerPrefs.SetString(fieldKey, dataMemberInfo.GetValue<string>(entity));
                 }
-                else if (dataMemberInfo.GetMemberInfoType() == typeof(bool))
+                else if (fieldType == typeof(bool))
                 {
                     PlayerPrefs.SetString(fieldKey, dataMemberInfo.GetValue<bool>(entity).ToString());
                 }
-                else if (dataMemberInfo.GetMemberInfoType() == typeof (int))
+                else if (fieldType == typeof (int))
                 {
                     PlayerPrefs.SetInt(fieldKey, dataMemberInfo.GetValue<int>(entity));
                 }
-                else if (dataMemberInfo.GetMemberInfoType() == typeof (float))
+                else if (fieldType == typeof (float))
                 {
                     PlayerPrefs.SetFloat(fieldKey, dataMemberInfo.GetValue<float>(entity));
                 }
+                else if (fieldType == typeof (DateTime))
+                {
+                    DateTime dateTime = dataMemberInfo.GetValue<DateTime>(entity);
+                    string binaryString = dateTime.ToBinary().ToString();
+                    PlayerPrefs.SetString(fieldKey, binaryString);
+                }
                 else
                 {
-                    throw new Exception("Not supported filed type: " + dataMemberInfo.GetMemberInfoType());
+                    throw new Exception("Not supported field type: " + dataMemberInfo.GetMemberInfoType());
                 }
             }
             PlayerPrefs.Save();
@@ -105,31 +111,40 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             foreach (DataMemberInfo dataMemberInfo in dataMemberInfos)
             {
                 string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
+                Type fieldType = dataMemberInfo.GetMemberInfoType();
                 if (PlayerPrefs.HasKey(fieldKey))
                 {
-                    if (dataMemberInfo.GetMemberInfoType() == typeof(string))
+                    if (fieldType == typeof(string))
                     {
                         string strValue = PlayerPrefs.GetString(fieldKey);
                         dataMemberInfo.SetValue(entity, strValue);
                     }
-                    else if (dataMemberInfo.GetMemberInfoType() == typeof(bool))
+                    else if (fieldType == typeof(bool))
                     {
                         bool boolValue = bool.Parse(PlayerPrefs.GetString(fieldKey));
                         dataMemberInfo.SetValue(entity, boolValue);
                     }
-                    else if (dataMemberInfo.GetMemberInfoType() == typeof(int))
+                    else if (fieldType == typeof(int))
                     {
                         int intValue = PlayerPrefs.GetInt(fieldKey);
                         dataMemberInfo.SetValue(entity, intValue);
                     }
-                    else if (dataMemberInfo.GetMemberInfoType() == typeof (float))
+                    else if (fieldType == typeof (float))
                     {
                         float floatValue = PlayerPrefs.GetFloat(fieldKey);
                         dataMemberInfo.SetValue(entity, floatValue);
                     }
+                    else if (fieldType == typeof(DateTime))
+                    {
+                        string binaryString = PlayerPrefs.GetString(fieldKey);
+                        DateTime dateTime = string.IsNullOrEmpty(binaryString)
+                            ? new DateTime()
+                            : DateTime.FromBinary(long.Parse(binaryString));
+                        dataMemberInfo.SetValue(entity, dateTime);
+                    }
                     else
                     {
-                        throw new Exception("Not supported filed type: " + dataMemberInfo.GetMemberInfoType());
+                        throw new Exception("Not supported field type: " + dataMemberInfo.GetMemberInfoType());
                     }
                 }
             }
