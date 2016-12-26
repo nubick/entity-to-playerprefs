@@ -24,6 +24,8 @@ namespace Assets.Tests.Scripts
         public void Awake()
         {
             PlayerPrefsMapper.Load(this);
+            Debug.Log("SubscriptionEndDate: " + SubscriptionEndDate);
+            Debug.Log("LastDailyRewardDate: " + LastDailyRewardDate);
             Debug.Log("GameState succesffully loaded.");
         }
 

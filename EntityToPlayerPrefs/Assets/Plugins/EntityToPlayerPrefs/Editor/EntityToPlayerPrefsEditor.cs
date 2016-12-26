@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using UnityEditor;
 using UnityEngine;
 using System;
+using Assets.Plugins.EntityToPlayerPrefs.FieldHandlers;
 
 namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 {
@@ -182,13 +183,22 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 			if (value is byte[] ||	//string on Windows
 				value is string)	//string on MacOS
 			{
-                string oldValue = PlayerPrefs.GetString(ppKey);
-                string newValue = EditorGUILayout.TextField(oldValue);
-                if (newValue != oldValue)
-                {
-                    PlayerPrefs.SetString(ppKey, newValue);
-                    PlayerPrefs.Save();
-                    Refresh();
+			    if (DateTimeFieldHandler.IsDateTimeRecord(ppKey))
+			    {
+			        bool hasChanges = DateTimeFieldHandler.DrawEditor(ppKey);
+                    if(hasChanges)
+                        Refresh();
+			    }
+			    else
+			    {
+                    string oldValue = PlayerPrefs.GetString(ppKey);
+                    string newValue = EditorGUILayout.TextField(oldValue);
+                    if (newValue != oldValue)
+                    {
+                        PlayerPrefs.SetString(ppKey, newValue);
+                        PlayerPrefs.Save();
+                        Refresh();
+                    }
                 }
             }
             else if (value is int)
