@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Plugins.EntityToPlayerPrefs.FieldHandlers;
 using UnityEngine;
 
 namespace Assets.Plugins.EntityToPlayerPrefs
@@ -68,32 +69,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             {
                 string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
                 Type fieldType = dataMemberInfo.GetMemberInfoType();
-                if (fieldType == typeof (string))
-                {
-                    PlayerPrefs.SetString(fieldKey, dataMemberInfo.GetValue<string>(entity));
-                }
-                else if (fieldType == typeof(bool))
-                {
-                    PlayerPrefs.SetString(fieldKey, dataMemberInfo.GetValue<bool>(entity).ToString());
-                }
-                else if (fieldType == typeof (int))
-                {
-                    PlayerPrefs.SetInt(fieldKey, dataMemberInfo.GetValue<int>(entity));
-                }
-                else if (fieldType == typeof (float))
-                {
-                    PlayerPrefs.SetFloat(fieldKey, dataMemberInfo.GetValue<float>(entity));
-                }
-                else if (fieldType == typeof (DateTime))
-                {
-                    DateTime dateTime = dataMemberInfo.GetValue<DateTime>(entity);
-                    string binaryString = dateTime.ToBinary().ToString();
-                    PlayerPrefs.SetString(fieldKey, binaryString);
-                }
-                else
-                {
-                    throw new Exception("Not supported field type: " + dataMemberInfo.GetMemberInfoType());
-                }
+                PlayerPrefsFieldHandler fieldHandler = PlayerPrefsFieldFactory.Get(fieldType);
+                fieldHandler.SetValue(fieldKey, dataMemberInfo, entity);
             }
             PlayerPrefs.Save();
         }
@@ -114,38 +91,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs
                 Type fieldType = dataMemberInfo.GetMemberInfoType();
                 if (PlayerPrefs.HasKey(fieldKey))
                 {
-                    if (fieldType == typeof(string))
-                    {
-                        string strValue = PlayerPrefs.GetString(fieldKey);
-                        dataMemberInfo.SetValue(entity, strValue);
-                    }
-                    else if (fieldType == typeof(bool))
-                    {
-                        bool boolValue = bool.Parse(PlayerPrefs.GetString(fieldKey));
-                        dataMemberInfo.SetValue(entity, boolValue);
-                    }
-                    else if (fieldType == typeof(int))
-                    {
-                        int intValue = PlayerPrefs.GetInt(fieldKey);
-                        dataMemberInfo.SetValue(entity, intValue);
-                    }
-                    else if (fieldType == typeof (float))
-                    {
-                        float floatValue = PlayerPrefs.GetFloat(fieldKey);
-                        dataMemberInfo.SetValue(entity, floatValue);
-                    }
-                    else if (fieldType == typeof(DateTime))
-                    {
-                        string binaryString = PlayerPrefs.GetString(fieldKey);
-                        DateTime dateTime = string.IsNullOrEmpty(binaryString)
-                            ? new DateTime()
-                            : DateTime.FromBinary(long.Parse(binaryString));
-                        dataMemberInfo.SetValue(entity, dateTime);
-                    }
-                    else
-                    {
-                        throw new Exception("Not supported field type: " + dataMemberInfo.GetMemberInfoType());
-                    }
+                    PlayerPrefsFieldHandler fieldHandler = PlayerPrefsFieldFactory.Get(fieldType);
+                    dataMemberInfo.SetValue(entity, fieldHandler.GetValue(fieldKey));
                 }
             }
         }
