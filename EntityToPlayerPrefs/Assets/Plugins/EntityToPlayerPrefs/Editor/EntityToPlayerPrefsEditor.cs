@@ -183,12 +183,15 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 			if (value is byte[] ||	//string on Windows
 				value is string)	//string on MacOS
 			{
+			    bool hasChanges = false;
 			    if (DateTimeFieldHandler.IsDateTimeRecord(ppKey))
 			    {
-			        bool hasChanges = DateTimeFieldHandler.DrawEditor(ppKey);
-                    if(hasChanges)
-                        Refresh();
+			        hasChanges = DateTimeFieldHandler.DrawEditor(ppKey);
 			    }
+                else if (BoolFieldHandler.IsBoolRecord(ppKey))
+                {
+                    hasChanges = BoolFieldHandler.DrawEditor(ppKey);
+                }
 			    else
 			    {
                     string oldValue = PlayerPrefs.GetString(ppKey);
@@ -197,9 +200,12 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
                     {
                         PlayerPrefs.SetString(ppKey, newValue);
                         PlayerPrefs.Save();
-                        Refresh();
+                        hasChanges = true;
                     }
                 }
+
+                if (hasChanges)
+                    Refresh();
             }
             else if (value is int)
             {

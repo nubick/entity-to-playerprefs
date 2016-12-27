@@ -1,6 +1,9 @@
 ﻿using System;
-using UnityEditor;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 {
@@ -30,21 +33,19 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 
         public override void SetValue(string fieldKey, DataMemberInfo dataMemberInfo, object entity)
         {
-            DateTime dateTime = dataMemberInfo.GetValue<DateTime>(entity);
-            PlayerPrefs.SetString(fieldKey, ToBinaryString(dateTime));
+            SetDateTimeValue(fieldKey, dataMemberInfo.GetValue<DateTime>(entity));
         }
 
-        private static string ToBinaryString(DateTime dateTime)
+        private static void SetDateTimeValue(string fieldKey, DateTime dateTime)
         {
-            return ValuePrefix + dateTime.ToBinary();
+            PlayerPrefs.SetString(fieldKey, ValuePrefix + dateTime.ToBinary());
         }
 
 #if UNITY_EDITOR
 
         public static bool IsDateTimeRecord(string fieldKey)
         {
-            string stringValue = PlayerPrefs.GetString(fieldKey);
-            return stringValue.StartsWith(ValuePrefix);
+            return PlayerPrefs.GetString(fieldKey).StartsWith(ValuePrefix);
         }
 
         public static bool DrawEditor(string fieldKey)
@@ -56,7 +57,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
                 DateTime newDateTime;
                 if (DateTime.TryParse(newDateTimeString, out newDateTime))
                 {
-                    PlayerPrefs.SetString(fieldKey, ToBinaryString(newDateTime));
+                    SetDateTimeValue(fieldKey, newDateTime);
                     PlayerPrefs.Save();
                     return true;
                 }
