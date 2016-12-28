@@ -278,10 +278,16 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         private void DrawBottomPanel()
         {
             GUILayout.BeginHorizontal("box");
+            DrawVersion();
             GUILayout.FlexibleSpace();
             DrawClearTabButton();
             DrawClearAllButton();
             GUILayout.EndHorizontal();
+        }
+
+        private void DrawVersion()
+        {
+            GUILayout.Label("Version 0.2");
         }
 
         private void DrawClearTabButton()
