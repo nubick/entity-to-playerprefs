@@ -47,7 +47,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         private Dictionary<string, object> LoadForWindows()
         {
             Dictionary<string, object> values = new Dictionary<string, object>();
-            string registryPath = string.Format("Software\\AppDataLow\\Software\\{0}\\{1}", PlayerSettings.companyName, PlayerSettings.productName);
+            string registryPath = GetWindowsRegestryPath();
             RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(registryPath);
             //When there are no any records, OpenSubKey return null but not object with no values.
             if (registryKey != null)
@@ -63,10 +63,19 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             return values;
         }
 
-		private Dictionary<string, object> LoadForMacOS()
+        private string GetWindowsRegestryPath()
+        {
+#if UNITY_5_5_OR_NEWER
+            return string.Format("Software\\Unity\\UnityEditor\\{0}\\{1}", PlayerSettings.companyName, PlayerSettings.productName);
+#else
+            return string.Format("Software\\{0}\\{1}", PlayerSettings.companyName, PlayerSettings.productName);
+#endif
+        }
+
+        private Dictionary<string, object> LoadForMacOS()
 		{
 			// Plist from from https://github.com/animetrics/PlistCS:
-			string fullPath = Environment.GetFolderPath(System.Environment.SpecialFolder.Personal) + 
+			string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + 
 				"/Library/Preferences/unity." + PlayerSettings.companyName + "." + PlayerSettings.productName + ".plist";
 			Dictionary<string, object> plistDic = (Dictionary<string, object>) PlistCS.Plist.readPlist(fullPath);
 

@@ -26,13 +26,13 @@ namespace Assets.Tests.Scripts
             PlayerPrefsMapper.Load(this);
             Debug.Log("SubscriptionEndDate: " + SubscriptionEndDate);
             Debug.Log("LastDailyRewardDate: " + LastDailyRewardDate);
-            Debug.Log("GameState succesffully loaded.");
+            Debug.Log("GameState successfully loaded.");
         }
 
         public void Save()
         {
             PlayerPrefsMapper.Save(this);
-            Debug.Log("GameState sucessfully saved.");
+            Debug.Log("GameState successfully saved.");
         }
     }
 }
