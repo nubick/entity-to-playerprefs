@@ -67,12 +67,5 @@ namespace Assets.Tests.Scripts
             Level level = Levels[Random.Range(0, Levels.Length)];
             level.Complete(Random.Range(0,3) + 1);
         }
-
-        public void SaveLevels()
-        {
-            PlayerPrefsMapper.Save(Levels);
-            Debug.Log("All levels are saved.");
-        }
-         
     }
 }

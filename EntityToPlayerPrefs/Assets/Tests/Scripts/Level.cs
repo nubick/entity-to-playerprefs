@@ -8,7 +8,7 @@ namespace Assets.Tests.Scripts
     public class Level : MonoBehaviour
     {
         [PlayerPrefsEntityId] public string Id { get { return Number.ToString(); } }
-        [PlayerPrefsField] public int Number;
+        public int Number;
         [PlayerPrefsField] public bool IsCompleted;
         [PlayerPrefsField] public int Stars;
 
