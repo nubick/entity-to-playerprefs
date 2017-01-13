@@ -1,12 +1,19 @@
 ﻿using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using Assets.Plugins.EntityToPlayerPrefs;
 
 namespace Assets.Tests.Scripts
 {
     public class TestManager : MonoBehaviour
     {
         public GameState GameState;
+        public Level[] Levels;
+
+        public void Awake()
+        {
+            PlayerPrefsMapper.Load(Levels);
+        }
 
         public void FillGameStateWithRandomValues(GameState gameState)
         {
@@ -54,5 +61,18 @@ namespace Assets.Tests.Scripts
             long randomTicks = (long) Random.Range(minTicks, maxTicks);
             return new DateTime(randomTicks);
         }
+    
+        public void CompleteRandomLevel()
+        {
+            Level level = Levels[Random.Range(0, Levels.Length)];
+            level.Complete(Random.Range(0,3) + 1);
+        }
+
+        public void SaveLevels()
+        {
+            PlayerPrefsMapper.Save(Levels);
+            Debug.Log("All levels are saved.");
+        }
+         
     }
 }
