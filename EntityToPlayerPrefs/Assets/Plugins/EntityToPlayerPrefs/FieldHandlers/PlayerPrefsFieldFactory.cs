@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 {
@@ -58,6 +60,15 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
                 return _dateTimeFieldHandler;
             }
         }
+            
+        private static Dictionary<Type, EnumFieldHandler> _enumFieldHandlers = new Dictionary<Type, EnumFieldHandler>();
+        private static EnumFieldHandler GetEnumFieldHandler(Type enumType)
+        {
+            if(!_enumFieldHandlers.ContainsKey(enumType))
+                _enumFieldHandlers.Add(enumType, new EnumFieldHandler(enumType));
+            return _enumFieldHandlers[enumType];
+        }
+
 
         public static PlayerPrefsFieldHandler Get(Type fieldType)
         {
@@ -76,6 +87,9 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
             if (fieldType == typeof (DateTime))
                 return DateTimeFieldHandler;
 
+            if(fieldType.IsEnum)
+                return GetEnumFieldHandler(fieldType);
+                
             throw new Exception("Not supported field type: " + fieldType);
         }
     }

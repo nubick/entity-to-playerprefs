@@ -21,6 +21,9 @@ namespace Assets.Tests.Scripts
         [PlayerPrefsField] public DateTime SubscriptionEndDate;
         [PlayerPrefsField] public DateTime LastDailyRewardDate { get; set; }
 
+        [PlayerPrefsField] public GameMode GameMode;
+        [PlayerPrefsField] public PurchaseMode PurchaseMode { get; set; }
+
         public void Awake()
         {
             PlayerPrefsMapper.Load(this);
@@ -34,5 +37,20 @@ namespace Assets.Tests.Scripts
             PlayerPrefsMapper.Save(this);
             Debug.Log("GameState successfully saved.");
         }
+    }
+
+    public enum GameMode
+    {
+        Tutorial,
+        FreePlay,
+        PvP,
+        Tournament
+    }
+
+    public enum PurchaseMode
+    {
+        ShowAds,
+        MonthlySubscription,
+        VipMode
     }
 }
