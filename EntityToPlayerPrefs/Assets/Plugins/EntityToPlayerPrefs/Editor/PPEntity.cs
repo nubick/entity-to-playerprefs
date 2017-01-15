@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 {
@@ -22,6 +23,13 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         {
             Values.Add(key, value);
             PPKeys.Add(key, ppKey);
+        }
+
+        public List<string> GetSortedKeys()
+        {
+            List<string> keys = Values.Keys.ToList();
+            keys.Sort();
+            return keys;
         }
     }
 }

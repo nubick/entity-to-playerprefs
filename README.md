@@ -83,3 +83,4 @@ Plugin extends PlayerPrefs types:
 by following types:
 - bool
 - DateTime
+- Enumerators

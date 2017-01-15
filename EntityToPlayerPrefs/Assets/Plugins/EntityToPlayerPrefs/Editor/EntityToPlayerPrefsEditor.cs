@@ -167,7 +167,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 
             GUILayout.Label("Id: " + entity.Id);
 
-            foreach (string propertyName in entity.Values.Keys)
+            foreach (string propertyName in entity.GetSortedKeys())
                 DrawRecord(propertyName, entity.PPKeys[propertyName], entity.Values[propertyName]);
 
             GUILayout.BeginHorizontal();
@@ -186,13 +186,12 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         private void DrawRecord(string recordKey, string ppKey, object value)
         {
             GUILayout.BeginHorizontal();
-
             GUILayout.Label(recordKey, GUILayout.Width(150));
+            bool hasChanges = false;
 
 			if (value is byte[] ||	//string on Windows
 				value is string)	//string on MacOS
 			{
-			    bool hasChanges = false;
 			    if (DateTimeFieldHandler.IsDateTimeRecord(ppKey))
 			    {
 			        hasChanges = DateTimeFieldHandler.DrawEditor(ppKey);
@@ -212,9 +211,6 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
                         hasChanges = true;
                     }
                 }
-
-                if (hasChanges)
-                    Refresh();
             }
             else if (value is int)
             {
@@ -226,25 +222,25 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
                     {
                         PlayerPrefs.SetInt(ppKey, newValue);
                         PlayerPrefs.Save();
-                        Refresh();
+                        hasChanges = true;
                     }
                 }
-                else
+                else //float on Windows
                 {
-                    float oldValue = PlayerPrefs.GetFloat(ppKey);
-                    float newValue = EditorGUILayout.FloatField(oldValue);
-                    if (Mathf.Approximately(oldValue, newValue))
-                    {
-                        PlayerPrefs.SetFloat(ppKey, newValue);
-                        PlayerPrefs.Save();
-                        Refresh();
-                    }
+                    hasChanges = DrawFloatField(ppKey);
                 }
+            }
+            else if(value is double) //float on MacOS
+            {
+                hasChanges = DrawFloatField(ppKey);
             }
             else
             {
                 GUILayout.Label("Not implemented value type: " + value.GetType().Name);
             }
+
+            if (hasChanges)
+                Refresh();
 
             if (GUILayout.Button("X", GUILayout.Width(50)))
             {
@@ -269,12 +265,25 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             return true;
         }
 
+        private bool DrawFloatField(string ppKey)
+        {
+            float oldValue = PlayerPrefs.GetFloat(ppKey);
+            float newValue = EditorGUILayout.FloatField(oldValue);
+            if (!Mathf.Approximately(oldValue, newValue))
+            {
+                PlayerPrefs.SetFloat(ppKey, newValue);
+                PlayerPrefs.Save();
+                return true;
+            }
+            return false;
+        }
+
         private void DeleteEntity(PPEntity entity)
         {
             foreach (string ppKey in entity.PPKeys.Values)
                 PlayerPrefs.DeleteKey(ppKey);
         }
-
+         
         private void DrawBottomPanel()
         {
             GUILayout.BeginHorizontal("box");
@@ -287,7 +296,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 
         private void DrawVersion()
         {
-            GUILayout.Label("Version 0.2");
+            GUILayout.Label("Version 0.3");
         }
 
         private void DrawClearTabButton()

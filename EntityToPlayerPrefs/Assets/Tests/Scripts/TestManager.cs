@@ -31,6 +31,9 @@ namespace Assets.Tests.Scripts
 
             gameState.SubscriptionEndDate = GetRandomDateTime();
             gameState.LastDailyRewardDate = GetRandomDateTime();
+
+            gameState.GameMode = GetRandomEnum<GameMode>();
+            gameState.PurchaseMode = GetRandomEnum<PurchaseMode>();
         }
 
         public void SaveRandomGameState()
@@ -60,6 +63,15 @@ namespace Assets.Tests.Scripts
             long maxTicks = DateTime.MaxValue.Ticks;
             long randomTicks = (long) Random.Range(minTicks, maxTicks);
             return new DateTime(randomTicks);
+        }
+
+        private T GetRandomEnum<T>() where T : struct, IComparable
+        {
+            Type enumType = typeof(T);
+            if(!enumType.IsEnum)
+                throw new Exception("T must be an enumerated type.");
+            Array array = Enum.GetValues(enumType);
+            return (T)array.GetValue(Random.Range(0, array.GetLength(0)));
         }
     
         public void CompleteRandomLevel()
