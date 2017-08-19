@@ -166,7 +166,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         {
             GUILayout.BeginVertical("Box");
 
-            GUILayout.Label("Id: " + entity.Id);
+            if (entity.Id != PlayerPrefsMapper.SingleEntityId)
+                GUILayout.Label("Id: " + entity.Id);
 
             foreach (string propertyName in entity.GetSortedKeys())
                 DrawRecord(propertyName, entity.PPKeys[propertyName], entity.Values[propertyName]);

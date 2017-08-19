@@ -9,7 +9,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs
     public class PlayerPrefsMapper
     {
         public const string EntityKeyPrefix = "__entity";
-        private const string SingleEntityId = "__single";
+        public const string SingleEntityId = "__single";
 
         private static string GetEntityId(object entity)
         {
