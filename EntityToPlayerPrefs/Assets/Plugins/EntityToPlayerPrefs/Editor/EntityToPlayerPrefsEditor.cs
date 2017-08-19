@@ -284,11 +284,14 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             foreach (string ppKey in entity.PPKeys.Values)
                 PlayerPrefs.DeleteKey(ppKey);
         }
-         
+
+        #region Bottom Panel
+
         private void DrawBottomPanel()
         {
             GUILayout.BeginHorizontal("box");
             DrawVersion();
+            DrawLatestVersionLink();
             GUILayout.FlexibleSpace();
             DrawClearTabButton();
             DrawClearAllButton();
@@ -297,7 +300,15 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 
         private void DrawVersion()
         {
-            GUILayout.Label("Version 0.3");
+            GUILayout.Label("Version 1.0");
+        }
+
+        private void DrawLatestVersionLink()
+        {
+            if (GUILayout.Button("Latest version"))
+            {
+				Application.OpenURL("https://github.com/nubick/entity-to-playerprefs");
+            }
         }
 
         private void DrawClearTabButton()
@@ -339,5 +350,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
                 }
             }
         }
+
+        #endregion
     }
 }
