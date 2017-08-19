@@ -17,7 +17,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         private string _selectedType;
         private Vector2 _verticalScroll;
 
-        [MenuItem("Your Game/Entity to PlayerPrefs")]
+		//[MenuItem("Window/Utils/Entity to PlayerPrefs %p")]
+		[MenuItem("Window/Utils/Entity to PlayerPrefs")]
         public static void ShowEditor()
         {
             EntityToPlayerPrefsEditor window = GetWindow<EntityToPlayerPrefsEditor>();
