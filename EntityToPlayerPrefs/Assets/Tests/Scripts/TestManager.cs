@@ -79,5 +79,18 @@ namespace Assets.Tests.Scripts
             Level level = Levels[Random.Range(0, Levels.Length)];
             level.Complete(Random.Range(0,3) + 1);
         }
+
+        public void DeleteProperty()
+        {
+            PlayerPrefsMapper.Delete(GameState, _ => _.LastName);
+            PlayerPrefsMapper.Delete(GameState, _ => _.FirstName);
+            PlayerPrefsMapper.Delete(Levels[0], _ => _.IsCompleted);
+        }
+
+        public void HasKey()
+        {
+            bool hasLastName = PlayerPrefsMapper.HasKey(GameState, _ => _.LastName);
+            Debug.Log("Has last name: " + hasLastName);
+        }
     }
 }

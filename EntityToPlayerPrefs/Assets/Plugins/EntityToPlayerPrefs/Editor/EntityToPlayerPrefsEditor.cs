@@ -17,8 +17,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         private string _selectedType;
         private Vector2 _verticalScroll;
 
-		//[MenuItem("Window/Utils/Entity to PlayerPrefs %p")]
-		[MenuItem("Window/Utils/Entity to PlayerPrefs")]
+		[MenuItem("Window/Utils/Entity to PlayerPrefs %&p")]
+		//[MenuItem("Window/Utils/Entity to PlayerPrefs")]
         public static void ShowEditor()
         {
             EntityToPlayerPrefsEditor window = GetWindow<EntityToPlayerPrefsEditor>();
@@ -128,7 +128,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             GUILayout.BeginHorizontal();
 
             List<string> tabs = _entities.Select(_ => _.Type).Distinct().ToList();
-            tabs.Insert(0, NotEntitiesTab);
+            tabs.Add(NotEntitiesTab);
 
             foreach (string type in tabs)
             {

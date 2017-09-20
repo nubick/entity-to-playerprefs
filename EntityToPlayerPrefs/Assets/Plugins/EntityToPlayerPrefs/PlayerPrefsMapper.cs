@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Assets.Plugins.EntityToPlayerPrefs.FieldHandlers;
 using UnityEngine;
 
@@ -57,8 +58,13 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 
         private static string GetFieldKey(string entityId, Type entityType, DataMemberInfo dataMemberInfo)
         {
-            return string.Format("{0}.{1}.{2}.{3}", EntityKeyPrefix, entityType.Name, entityId, dataMemberInfo.GetName());
+            return GetFieldKey(entityId, entityType, dataMemberInfo.GetName());
         }
+
+        private static string GetFieldKey(string entityId, Type entityType, string dataMemberName)
+        {
+            return string.Format("{0}.{1}.{2}.{3}", EntityKeyPrefix, entityType.Name, entityId, dataMemberName);
+		}
 
         public static void Save(object entity)
         {
@@ -137,5 +143,25 @@ namespace Assets.Plugins.EntityToPlayerPrefs
                 entityKeys.Add(GetFieldKey(entityId, entityType, dataMemberInfo));
             return entityKeys;
         }
+
+		private static string GetFieldKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
+        {
+			string entityId = GetEntityId(entity);
+			MemberExpression memberExpression = expr.Body as MemberExpression;
+			return GetFieldKey(entityId, typeof(TEntity), memberExpression.Member.Name);
+		}
+
+		public static void Delete<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
+        {
+			string fieldKey = GetFieldKey(entity, expr);
+            PlayerPrefs.DeleteKey(fieldKey);
+            PlayerPrefs.Save();
+        }
+
+        public static bool HasKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
+        {
+            string fieldKey = GetFieldKey(entity, expr);
+            return PlayerPrefs.HasKey(fieldKey);
+		}
     }
 }
