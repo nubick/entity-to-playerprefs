@@ -15,7 +15,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs
         private static string GetEntityId(object entity)
         {
             Type entityType = entity.GetType();
-            List<DataMemberInfo> dataMemberInfos = GetDataMemberInfoWithAttribute<PlayerPrefsEntityIdAttribute>(entityType);
+            List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithEntityIdAttribute(entityType);
 
             if (dataMemberInfos.Count == 0)
                 return SingleEntityId;
@@ -29,7 +29,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs
         private static void SetEntityId(object entity, string entityId)
         {
             Type entityType = entity.GetType();
-            List<DataMemberInfo> dataMemberInfos = GetDataMemberInfoWithAttribute<PlayerPrefsEntityIdAttribute>(entityType);
+            List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithEntityIdAttribute(entityType);
 
             if (dataMemberInfos.Count == 0)
                 throw new Exception(string.Format("Entity {0} doesn't contain EntityId attribute.", entityType));
@@ -38,22 +38,6 @@ namespace Assets.Plugins.EntityToPlayerPrefs
                 throw new Exception(string.Format("Entity {0} contains more than one EntityId attribute.", entityType));
 
             dataMemberInfos[0].SetValue(entity, entityId);
-        }
-
-        private static List<DataMemberInfo> GetDataMemberInfoWithAttribute<TAttribute>(Type type)
-            where TAttribute : Attribute
-        {
-            List<DataMemberInfo> dataMemberInfos = new List<DataMemberInfo>();
-
-            dataMemberInfos.AddRange(type.GetFields()
-                .Where(fi => fi.GetCustomAttributes(typeof (TAttribute), true).Any())
-                .Select(fieldInfo => new DataMemberInfo(fieldInfo)));
-
-            dataMemberInfos.AddRange(type.GetProperties()
-                .Where(pi => pi.GetCustomAttributes(typeof (TAttribute), true).Any())
-                .Select(propertyInfo => new DataMemberInfo(propertyInfo)));
-
-            return dataMemberInfos;
         }
 
         private static string GetFieldKey(string entityId, Type entityType, DataMemberInfo dataMemberInfo)
@@ -70,7 +54,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs
         {
             string entityId = GetEntityId(entity);
             Type entityType = entity.GetType();
-            List<DataMemberInfo> dataMemberInfos = GetDataMemberInfoWithAttribute<PlayerPrefsFieldAttribute>(entityType);
+            List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType);
             foreach (DataMemberInfo dataMemberInfo in dataMemberInfos)
             {
                 string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
@@ -90,7 +74,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs
         public static void Load(object entity, string entityId)
         {
             Type entityType = entity.GetType();
-            List<DataMemberInfo> dataMemberInfos = GetDataMemberInfoWithAttribute<PlayerPrefsFieldAttribute>(entityType);
+            List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType);
             foreach (DataMemberInfo dataMemberInfo in dataMemberInfos)
             {
                 string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
@@ -139,7 +123,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             string entityId = GetEntityId(entity);
             Type entityType = entity.GetType();
             List<string> entityKeys = new List<string>();
-            foreach (DataMemberInfo dataMemberInfo in GetDataMemberInfoWithAttribute<PlayerPrefsFieldAttribute>(entityType))
+            foreach (DataMemberInfo dataMemberInfo in PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType))
                 entityKeys.Add(GetFieldKey(entityId, entityType, dataMemberInfo));
             return entityKeys;
         }
@@ -163,5 +147,41 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             string fieldKey = GetFieldKey(entity, expr);
             return PlayerPrefs.HasKey(fieldKey);
 		}
+
+        private static class PlayerPrefsCache
+        {
+            private static Dictionary<Type, List<DataMemberInfo>> _dataMemberInfosFieldCache = new Dictionary<Type, List<DataMemberInfo>>();
+            private static Dictionary<Type, List<DataMemberInfo>> _dataMemberInfosEntityIdCache = new Dictionary<Type, List<DataMemberInfo>>();
+
+            public static List<DataMemberInfo> GetDataMemberInfoWithFieldAttribute(Type type)
+            {
+                if (!_dataMemberInfosFieldCache.ContainsKey(type))
+                    _dataMemberInfosFieldCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsFieldAttribute>(type));
+                return _dataMemberInfosFieldCache[type];
+            }
+
+            public static List<DataMemberInfo> GetDataMemberInfoWithEntityIdAttribute(Type type)
+            {
+                if (!_dataMemberInfosEntityIdCache.ContainsKey(type))
+                    _dataMemberInfosEntityIdCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsEntityIdAttribute>(type));
+                return _dataMemberInfosEntityIdCache[type];
+            }
+
+            private static List<DataMemberInfo> GetDataMemberInfoWithAttribute<TAttribute>(Type type)
+                where TAttribute : Attribute
+            {
+                List<DataMemberInfo> dataMemberInfos = new List<DataMemberInfo>();
+
+                dataMemberInfos.AddRange(type.GetFields()
+                    .Where(fi => fi.GetCustomAttributes(typeof(TAttribute), true).Any())
+                    .Select(fieldInfo => new DataMemberInfo(fieldInfo)));
+
+                dataMemberInfos.AddRange(type.GetProperties()
+                    .Where(pi => pi.GetCustomAttributes(typeof(TAttribute), true).Any())
+                    .Select(propertyInfo => new DataMemberInfo(propertyInfo)));
+
+                return dataMemberInfos;
+            }
+        }
     }
 }
