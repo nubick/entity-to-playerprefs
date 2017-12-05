@@ -50,6 +50,30 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             return string.Format("{0}.{1}.{2}.{3}", EntityKeyPrefix, entityType.Name, entityId, dataMemberName);
 		}
 
+        private static List<string> GetEntityKeys(object entity)
+        {
+            string entityId = GetEntityId(entity);
+            Type entityType = entity.GetType();
+            return GetEntityKeys(entityType, entityId);
+        }
+
+        private static List<string> GetEntityKeys(Type entityType, string entityId)
+        {
+            List<string> entityKeys = new List<string>();
+            foreach (DataMemberInfo dataMemberInfo in PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType))
+                entityKeys.Add(GetFieldKey(entityId, entityType, dataMemberInfo));
+            return entityKeys;
+        }
+
+        private static string GetFieldKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
+        {
+            string entityId = GetEntityId(entity);
+            MemberExpression memberExpression = expr.Body as MemberExpression;
+            return GetFieldKey(entityId, typeof(TEntity), memberExpression.Member.Name);
+        }
+
+        #region Public API
+
         public static void Save(object entity)
         {
             string entityId = GetEntityId(entity);
@@ -64,6 +88,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             }
             PlayerPrefs.Save();
         }
+
+        #region Loading
 
         public static void Load(object entity)
         {
@@ -89,64 +115,78 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 
         public static void Load(object[] entities)
         {
-            foreach(object entity in entities)
+            foreach (object entity in entities)
                 Load(entity);
         }
 
-        public static T Load<T>()
-            where T : new()
+        public static TEntity Load<TEntity>()
+            where TEntity : new()
         {
-            T entity = new T();
+            TEntity entity = new TEntity();
             Load(entity);
             return entity;
         }
 
-        public static T Load<T>(string entityId)
-            where T : new()
+        public static TEntity Load<TEntity>(string entityId)
+            where TEntity : new()
         {
-            T entity = new T();
+            TEntity entity = new TEntity();
             Load(entity, entityId);
             SetEntityId(entity, entityId);
             return entity;
         }
 
+        #endregion
+
+        #region Deleting
+
         public static void Delete(object entity)
         {
-            List<string> entityKeys = GetEntityKeys(entity);
-            foreach (string key in entityKeys)
-                PlayerPrefs.DeleteKey(key);
+            foreach (string entityKey in GetEntityKeys(entity))
+                PlayerPrefs.DeleteKey(entityKey);
             PlayerPrefs.Save();
         }
 
-        private static List<string> GetEntityKeys(object entity)
+        public static void DeleteSingle<TEntity>()
         {
-            string entityId = GetEntityId(entity);
-            Type entityType = entity.GetType();
-            List<string> entityKeys = new List<string>();
-            foreach (DataMemberInfo dataMemberInfo in PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType))
-                entityKeys.Add(GetFieldKey(entityId, entityType, dataMemberInfo));
-            return entityKeys;
+            foreach (string entityKey in GetEntityKeys(typeof(TEntity), SingleEntityId))
+                PlayerPrefs.DeleteKey(entityKey);
+            PlayerPrefs.Save();
         }
 
-		private static string GetFieldKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
+        public static void Delete<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
         {
-			string entityId = GetEntityId(entity);
-			MemberExpression memberExpression = expr.Body as MemberExpression;
-			return GetFieldKey(entityId, typeof(TEntity), memberExpression.Member.Name);
-		}
-
-		public static void Delete<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
-        {
-			string fieldKey = GetFieldKey(entity, expr);
+            string fieldKey = GetFieldKey(entity, expr);
             PlayerPrefs.DeleteKey(fieldKey);
             PlayerPrefs.Save();
         }
+
+        #endregion
+
+        #region Checking
 
         public static bool HasKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
         {
             string fieldKey = GetFieldKey(entity, expr);
             return PlayerPrefs.HasKey(fieldKey);
-		}
+        }
+
+        public static bool Exists<TEntity>(string entityId)
+        {
+            foreach (string entityKey in GetEntityKeys(typeof(TEntity), entityId))
+                if (PlayerPrefs.HasKey(entityKey))
+                    return true;
+            return false;
+        }
+
+        public static bool ExistsSingle<TEntity>()
+        {
+            return Exists<TEntity>(SingleEntityId);
+        }
+
+        #endregion
+
+        #endregion
 
         private static class PlayerPrefsCache
         {
