@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using System;
 using Assets.Plugins.EntityToPlayerPrefs.FieldHandlers;
+using System.IO;
 
 namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 {
@@ -35,13 +36,13 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             if (string.IsNullOrEmpty(_selectedType))
                 _selectedType = NotEntitiesTab;
 
-			if(Application.platform == RuntimePlatform.WindowsEditor)
-				_keyValueDic = LoadForWindows();
-			else if(Application.platform == RuntimePlatform.OSXEditor)
-				_keyValueDic = LoadForMacOS();
-			else
-				Debug.Log("Not supported platform: " + Application.platform);
-			
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+                _keyValueDic = LoadForWindows();
+            else if (Application.platform == RuntimePlatform.OSXEditor)
+                _keyValueDic = LoadForMacOS();
+            else
+                Debug.Log("Not supported platform: " + Application.platform);
+
             _entities = GroupByEntities(_keyValueDic);
         }
 
@@ -74,18 +75,18 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         }
 
         private Dictionary<string, object> LoadForMacOS()
-		{
-			// Plist from from https://github.com/animetrics/PlistCS:
-			string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + 
-				"/Library/Preferences/unity." + PlayerSettings.companyName + "." + PlayerSettings.productName + ".plist";
-			Dictionary<string, object> plistDic = (Dictionary<string, object>) PlistCS.Plist.readPlist(fullPath);
+        {
+            // Plist from from https://github.com/animetrics/PlistCS:
+            string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) +
+                "/Library/Preferences/unity." + PlayerSettings.companyName + "." + PlayerSettings.productName + ".plist";
+            Dictionary<string, object> plistDic = (Dictionary<string, object>)PlistCS.Plist.readPlist(fullPath);
 
-			foreach(string key in plistDic.Keys.ToArray())
-				if(!PlayerPrefs.HasKey(key))
-					plistDic.Remove(key);
+            foreach (string key in plistDic.Keys.ToArray())
+                if (!PlayerPrefs.HasKey(key))
+                    plistDic.Remove(key);
 
-			return plistDic;
-		}
+            return plistDic;
+        }
 
         private List<PPEntity> GroupByEntities(Dictionary<string, object> keyValueDic)
         {
@@ -191,19 +192,19 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             GUILayout.Label(recordKey, GUILayout.Width(150));
             bool hasChanges = false;
 
-			if (value is byte[] ||	//string on Windows
-				value is string)	//string on MacOS
-			{
-			    if (DateTimeFieldHandler.IsDateTimeRecord(ppKey))
-			    {
-			        hasChanges = DateTimeFieldHandler.DrawEditor(ppKey);
-			    }
+            ValueType valueType = GetValueType(value, ppKey);
+            if (valueType == ValueType.String)
+            {
+                if (DateTimeFieldHandler.IsDateTimeRecord(ppKey))
+                {
+                    hasChanges = DateTimeFieldHandler.DrawEditor(ppKey);
+                }
                 else if (BoolFieldHandler.IsBoolRecord(ppKey))
                 {
                     hasChanges = BoolFieldHandler.DrawEditor(ppKey);
                 }
-			    else
-			    {
+                else
+                {
                     string oldValue = PlayerPrefs.GetString(ppKey);
                     string newValue = EditorGUILayout.TextField(oldValue);
                     if (newValue != oldValue)
@@ -214,31 +215,27 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
                     }
                 }
             }
-            else if (value is int)
+            else if (valueType == ValueType.Int)
             {
-                if (IsInt(ppKey))
+                int oldValue = PlayerPrefs.GetInt(ppKey);
+                int newValue = EditorGUILayout.IntField(oldValue);
+                if (newValue != oldValue)
                 {
-                    int oldValue = PlayerPrefs.GetInt(ppKey);
-                    int newValue = EditorGUILayout.IntField(oldValue);
-                    if (newValue != oldValue)
-                    {
-                        PlayerPrefs.SetInt(ppKey, newValue);
-                        PlayerPrefs.Save();
-                        hasChanges = true;
-                    }
-                }
-                else //float on Windows
-                {
-                    hasChanges = DrawFloatField(ppKey);
+                    PlayerPrefs.SetInt(ppKey, newValue);
+                    PlayerPrefs.Save();
+                    hasChanges = true;
                 }
             }
-            else if(value is double) //float on MacOS
+            else if (valueType == ValueType.Float)
             {
-                hasChanges = DrawFloatField(ppKey);
-            }
-            else
-            {
-                GUILayout.Label("Not implemented value type: " + value.GetType().Name);
+                float oldValue = PlayerPrefs.GetFloat(ppKey);
+                float newValue = EditorGUILayout.FloatField(oldValue);
+                if (!Mathf.Approximately(oldValue, newValue))
+                {
+                    PlayerPrefs.SetFloat(ppKey, newValue);
+                    PlayerPrefs.Save();
+                    hasChanges = true;
+                }
             }
 
             if (hasChanges)
@@ -254,6 +251,24 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             GUILayout.EndHorizontal();
         }
 
+        private ValueType GetValueType(object value, string ppKey)
+        {
+            if (value is byte[] ||  //string on Windows
+                value is string)    //string on MacOS
+                return ValueType.String;
+            else if (value is int)
+            {
+                if (IsInt(ppKey))
+                    return ValueType.Int;
+                else //float on Windows
+                    return ValueType.Float;
+            }
+            else if (value is double) //float on MacOS
+                return ValueType.Float;
+
+            throw new Exception("Not supported value type: " + value.GetType().Name);
+        }
+
         private bool IsInt(string ppKey)
         {
             int intValue = PlayerPrefs.GetInt(ppKey);
@@ -265,19 +280,6 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
                 return false;
 
             return true;
-        }
-
-        private bool DrawFloatField(string ppKey)
-        {
-            float oldValue = PlayerPrefs.GetFloat(ppKey);
-            float newValue = EditorGUILayout.FloatField(oldValue);
-            if (!Mathf.Approximately(oldValue, newValue))
-            {
-                PlayerPrefs.SetFloat(ppKey, newValue);
-                PlayerPrefs.Save();
-                return true;
-            }
-            return false;
         }
 
         private void DeleteEntity(PPEntity entity)
@@ -293,6 +295,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             GUILayout.BeginHorizontal("box");
             DrawVersion();
             DrawLatestVersionLink();
+            GUILayout.Space(10f);
+            DrawStatePanel();
             GUILayout.FlexibleSpace();
             DrawClearTabButton();
             DrawClearAllButton();
@@ -308,7 +312,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         {
             if (GUILayout.Button("Latest version"))
             {
-				Application.OpenURL("https://github.com/nubick/entity-to-playerprefs");
+                Application.OpenURL("https://github.com/nubick/entity-to-playerprefs");
             }
         }
 
@@ -320,7 +324,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
                     string.Format("Delete all records on '{0}' tab", _selectedType),
                     string.Format("All records on tab '{0}' will be deleted!", _selectedType), "Delete", "Cancel"))
                 {
-                    if (_selectedType == NotEntitiesTab) 
+                    if (_selectedType == NotEntitiesTab)
                     {
                         foreach (string ppKey in GetNoEntitiesKeys())
                             PlayerPrefs.DeleteKey(ppKey);
@@ -353,5 +357,221 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         }
 
         #endregion
+
+        #region PlayerPrefsState Saving/Loading
+
+        private Rect _createStateButtonRect;
+        private Dictionary<string, Rect> _stateButtonPopupRects = new Dictionary<string, Rect>();
+
+        private const string StatesFolderPath = "Assets/Plugins/EntityToPlayerPrefs/States/";
+
+        private void DrawStatePanel()
+        {
+            GUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Create State"))
+            {
+                PopupWindow.Show(_createStateButtonRect, new InputNamePopup(name =>
+                {
+                    PlayerPrefsState state = CreateInstance<PlayerPrefsState>();
+                    if (!Directory.Exists(StatesFolderPath))
+                        Directory.CreateDirectory(StatesFolderPath);
+                    string path = StatesFolderPath + name + ".asset";
+                    AssetDatabase.CreateAsset(state, path);
+                    AssetDatabase.SaveAssets();
+                }));
+            }
+
+            if (Event.current.type == EventType.Repaint) 
+                _createStateButtonRect = GUILayoutUtility.GetLastRect();
+
+            DrawStates();
+
+            GUILayout.EndHorizontal();
+        }
+
+        private void DrawStates()
+        {
+            PlayerPrefsState[] states = Resources.FindObjectsOfTypeAll<PlayerPrefsState>();
+            foreach (PlayerPrefsState state in states)
+            {
+                if (GUILayout.Button(state.name))
+                {
+                    StateActionsPopup stateActionsPopup = new StateActionsPopup();
+                    stateActionsPopup.OnDelete(() =>
+                    {                        
+                        AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(state));
+
+                        string[] files = Directory.GetFiles(StatesFolderPath);
+                        if (Directory.GetFiles(StatesFolderPath).Length == 0)
+                            Directory.Delete(StatesFolderPath);
+                        else
+                            Debug.Log(files[0]);
+
+                        AssetDatabase.Refresh();
+                    });
+                    stateActionsPopup.OnLoad(() =>
+                    {
+                        LoadState(state);
+                        Refresh();
+                    });
+                    stateActionsPopup.OnSave(() =>
+                    {
+                        SaveState(state);
+                    });
+                    PopupWindow.Show(_stateButtonPopupRects[state.name], stateActionsPopup);
+                }
+
+                if (Event.current.type == EventType.Repaint)
+                {
+                    if (!_stateButtonPopupRects.ContainsKey(state.name))
+                        _stateButtonPopupRects.Add(state.name, new Rect());
+                    _stateButtonPopupRects[state.name] = GUILayoutUtility.GetLastRect();
+                }
+            }
+        }
+
+        private void SaveState(PlayerPrefsState stateStorage)
+        {
+            stateStorage.PPKeys.Clear();
+            stateStorage.ValueTypes.Clear();
+            stateStorage.StringValues.Clear();
+            foreach(PPEntity entity in _entities)
+            {
+                foreach (string key in entity.PPKeys.Keys)
+                {
+                    string ppKey = entity.PPKeys[key];
+                    stateStorage.PPKeys.Add(ppKey);
+
+                    ValueType valueType = GetValueType(entity.Values[key], ppKey);
+                    stateStorage.ValueTypes.Add(valueType);
+
+                    string valueAsString = GetValueAsString(ppKey, valueType);
+                    stateStorage.StringValues.Add(valueAsString);
+                }
+            }
+            EditorUtility.SetDirty(stateStorage);
+        }
+
+        private string GetValueAsString(string ppKey, ValueType valueType)
+        {
+            if (valueType == ValueType.String)
+                return PlayerPrefs.GetString(ppKey);
+            else if (valueType == ValueType.Int)
+                return PlayerPrefs.GetInt(ppKey).ToString();
+            else if (valueType == ValueType.Float)
+                return PlayerPrefs.GetFloat(ppKey).ToString();
+
+            throw new Exception("Not supported recordType: " + valueType);
+        }
+
+        private void LoadState(PlayerPrefsState stateStorage)
+        {
+            PlayerPrefs.DeleteAll();
+            for (int i = 0; i < stateStorage.PPKeys.Count; i++)
+            {
+                ValueType valueType = stateStorage.ValueTypes[i];
+                string ppKey = stateStorage.PPKeys[i];
+                string stringValue = stateStorage.StringValues[i];
+
+                if (valueType == ValueType.String)
+                {
+                    PlayerPrefs.SetString(ppKey, stringValue);
+                }
+                else if (valueType == ValueType.Int)
+                {
+                    int intValue = int.Parse(stringValue);
+                    PlayerPrefs.SetInt(ppKey, intValue);
+                }
+                else if (valueType == ValueType.Float)
+                {
+                    float floatValue = float.Parse(stringValue);
+                    PlayerPrefs.SetFloat(ppKey, floatValue);
+                }
+            }
+            PlayerPrefs.Save();
+        }
+
+        #endregion
+    }
+
+    internal class InputNamePopup : PopupWindowContent
+    {
+        private string _name;
+        private Action<string> _finishAction;
+
+        public InputNamePopup(Action<string> finishAction)
+        {
+            _finishAction = finishAction;
+        }
+
+        public override void OnGUI(Rect rect)
+        {
+            GUILayout.BeginVertical();
+
+            GUILayout.Label("Input name of ScriptableObject. New file with this name will be created in the plugin directory. This file will be used as storage for state. You will be able to save/load state to/from this file.", EditorStyles.wordWrappedLabel);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Input name");
+            _name = GUILayout.TextField(_name);
+            GUILayout.EndHorizontal();
+
+            if(GUILayout.Button("Create"))
+            {
+                this.editorWindow.Close();
+                _finishAction(_name);
+            }
+
+            GUILayout.EndVertical();
+        }
+    }
+
+    internal class StateActionsPopup : PopupWindowContent
+    {
+        private Action _onDeleteAction;
+        private Action _onLoadAction;
+        private Action _onSaveAction;
+
+        public void OnDelete(Action onDeleteAction)
+        {
+            _onDeleteAction = onDeleteAction;
+        }
+
+        public void OnLoad(Action onLoadAction)
+        {
+            _onLoadAction = onLoadAction;
+        }
+
+        public void OnSave(Action onSaveAction)
+        {
+            _onSaveAction = onSaveAction;
+        }
+
+        public override void OnGUI(Rect rect)
+        {
+            GUILayout.BeginVertical();
+
+            if(GUILayout.Button("Load state"))
+            {
+                editorWindow.Close();
+                _onLoadAction();
+            }
+
+            if(GUILayout.Button("Save state"))
+            {
+                editorWindow.Close();
+                _onSaveAction();
+            }
+
+            GUILayout.Space(10f);
+
+            if(GUILayout.Button("Delete"))
+            {
+                editorWindow.Close();
+                _onDeleteAction();
+            }
+
+            GUILayout.EndVertical();
+        }
     }
 }
