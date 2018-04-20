@@ -147,11 +147,16 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             PlayerPrefs.Save();
         }
 
-        public static void DeleteSingle<TEntity>()
+        public static void Delete<TEntity>(string entityId)
         {
-            foreach (string entityKey in GetEntityKeys(typeof(TEntity), SingleEntityId))
+            foreach (string entityKey in GetEntityKeys(typeof(TEntity), entityId))
                 PlayerPrefs.DeleteKey(entityKey);
             PlayerPrefs.Save();
+        }
+
+        public static void DeleteSingle<TEntity>()
+        {
+            Delete<TEntity>(SingleEntityId);
         }
 
         public static void Delete<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
