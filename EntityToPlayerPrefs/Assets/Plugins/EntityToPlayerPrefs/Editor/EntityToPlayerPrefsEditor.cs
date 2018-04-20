@@ -18,8 +18,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         private string _selectedType;
         private Vector2 _verticalScroll;
 
-		[MenuItem("Window/Utils/Entity to PlayerPrefs %&p")]
-		//[MenuItem("Window/Utils/Entity to PlayerPrefs")]
+        [MenuItem("Window/Utils/Entity to PlayerPrefs %&p")]
+        //[MenuItem("Window/Utils/Entity to PlayerPrefs")]
         public static void ShowEditor()
         {
             EntityToPlayerPrefsEditor window = GetWindow<EntityToPlayerPrefsEditor>();
@@ -392,9 +392,11 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 
         private void DrawStates()
         {
-            PlayerPrefsState[] states = Resources.FindObjectsOfTypeAll<PlayerPrefsState>();
-            foreach (PlayerPrefsState state in states)
+            foreach (string guid in AssetDatabase.FindAssets("t:PlayerPrefsState", null))
             {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                PlayerPrefsState state = AssetDatabase.LoadAssetAtPath<PlayerPrefsState>(path);
+
                 if (GUILayout.Button(state.name))
                 {
                     StateActionsPopup stateActionsPopup = new StateActionsPopup();
