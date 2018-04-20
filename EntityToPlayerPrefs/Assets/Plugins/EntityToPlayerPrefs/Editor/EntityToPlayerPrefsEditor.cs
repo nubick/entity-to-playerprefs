@@ -12,6 +12,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
     public class EntityToPlayerPrefsEditor : EditorWindow
     {
         private const string NotEntitiesTab = "Not Entities";
+        public static string ClearOnStartKey = "EtoPPClearOnStart";
 
         private Dictionary<string, object> _keyValueDic;
         private List<PPEntity> _entities;
@@ -299,6 +300,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             GUILayout.Space(10f);
             DrawStatePanel();
             GUILayout.FlexibleSpace();
+            DrawClearOnStartCheckbox();
             DrawClearTabButton();
             DrawClearAllButton();
             GUILayout.EndHorizontal();
@@ -315,6 +317,14 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             {
                 Application.OpenURL("https://github.com/nubick/entity-to-playerprefs");
             }
+        }
+
+        private void DrawClearOnStartCheckbox()
+        {
+            bool oldValue = EditorPrefs.GetBool(ClearOnStartKey, false);
+            bool newValue = GUILayout.Toggle(oldValue, "Clear on start in Editor");
+            if (oldValue != newValue)
+                EditorPrefs.SetBool(ClearOnStartKey, newValue);
         }
 
         private void DrawClearTabButton()
@@ -575,6 +585,26 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             }
 
             GUILayout.EndVertical();
+        }
+    }
+
+    [InitializeOnLoad]
+    public static class EditorPlayModeCleaner
+    {
+        static EditorPlayModeCleaner()
+        {
+            EditorApplication.playModeStateChanged += OnPlayModeChanged;
+        }
+
+        private static void OnPlayModeChanged(PlayModeStateChange playModeStateChange)
+        {
+            bool shouldBeCleared = EditorPrefs.GetBool(EntityToPlayerPrefsEditor.ClearOnStartKey, false);
+            if (shouldBeCleared && playModeStateChange == PlayModeStateChange.ExitingEditMode)
+            {
+                Debug.Log("Entity to PlayerPrefs. Editor mode settings: clear All on start.");
+                PlayerPrefs.DeleteAll();
+                PlayerPrefs.Save();
+            }
         }
     }
 }
