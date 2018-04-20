@@ -79,7 +79,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
             // Plist from from https://github.com/animetrics/PlistCS:
             string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) +
                 "/Library/Preferences/unity." + PlayerSettings.companyName + "." + PlayerSettings.productName + ".plist";
-            Dictionary<string, object> plistDic = (Dictionary<string, object>)PlistCS.Plist.readPlist(fullPath);
+            Dictionary<string, object> plistDic = (Dictionary<string, object>)Plist.readPlist(fullPath);
 
             foreach (string key in plistDic.Keys.ToArray())
                 if (!PlayerPrefs.HasKey(key))

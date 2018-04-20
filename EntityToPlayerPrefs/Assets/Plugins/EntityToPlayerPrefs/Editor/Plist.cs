@@ -31,7 +31,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 
-namespace PlistCS
+namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 {
     public static class Plist
     {
