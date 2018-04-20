@@ -77,14 +77,15 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
         private Dictionary<string, object> LoadForMacOS()
         {
             // Plist from from https://github.com/animetrics/PlistCS:
-            string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) +
-                "/Library/Preferences/unity." + PlayerSettings.companyName + "." + PlayerSettings.productName + ".plist";
-            Dictionary<string, object> plistDic = (Dictionary<string, object>)Plist.readPlist(fullPath);
-
-            foreach (string key in plistDic.Keys.ToArray())
-                if (!PlayerPrefs.HasKey(key))
-                    plistDic.Remove(key);
-
+            string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Library/Preferences/unity." + PlayerSettings.companyName + "." + PlayerSettings.productName + ".plist";
+            Dictionary<string, object> plistDic = new Dictionary<string, object>();
+            if (File.Exists(fullPath))
+            {
+                plistDic = (Dictionary<string, object>)Plist.readPlist(fullPath);
+                foreach (string key in plistDic.Keys.ToArray())
+                    if (!PlayerPrefs.HasKey(key))
+                        plistDic.Remove(key);
+            }
             return plistDic;
         }
 
