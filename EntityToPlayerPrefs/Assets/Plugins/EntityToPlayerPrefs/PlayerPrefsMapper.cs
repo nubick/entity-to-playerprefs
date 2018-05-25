@@ -7,226 +7,226 @@ using UnityEngine;
 
 namespace Assets.Plugins.EntityToPlayerPrefs
 {
-    public class PlayerPrefsMapper
-    {
-        public const string EntityKeyPrefix = "__entity";
-        public const string SingleEntityId = "__single";
+	public class PlayerPrefsMapper
+	{
+		public const string EntityKeyPrefix = "__entity";
+		public const string SingleEntityId = "__single";
 
-        private static string GetEntityId(object entity)
-        {
-            Type entityType = entity.GetType();
-            List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithEntityIdAttribute(entityType);
+		private static string GetEntityId(object entity)
+		{
+			Type entityType = entity.GetType();
+			List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithEntityIdAttribute(entityType);
 
-            if (dataMemberInfos.Count == 0)
-                return SingleEntityId;
+			if (dataMemberInfos.Count == 0)
+				return SingleEntityId;
 
-            if (dataMemberInfos.Count > 1)
-                throw new Exception(string.Format("Entity {0} contains more than one EntityId attribute.", entityType));
+			if (dataMemberInfos.Count > 1)
+				throw new Exception(string.Format("Entity {0} contains more than one EntityId attribute.", entityType));
 
-            return dataMemberInfos[0].GetValue<string>(entity);
-        }
-
-        private static void SetEntityId(object entity, string entityId)
-        {
-            Type entityType = entity.GetType();
-            List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithEntityIdAttribute(entityType);
-
-            if (dataMemberInfos.Count == 0)
-                throw new Exception(string.Format("Entity {0} doesn't contain EntityId attribute.", entityType));
-
-            if (dataMemberInfos.Count > 1)
-                throw new Exception(string.Format("Entity {0} contains more than one EntityId attribute.", entityType));
-
-            dataMemberInfos[0].SetValue(entity, entityId);
-        }
-
-        private static string GetFieldKey(string entityId, Type entityType, DataMemberInfo dataMemberInfo)
-        {
-            return GetFieldKey(entityId, entityType, dataMemberInfo.GetName());
-        }
-
-        private static string GetFieldKey(string entityId, Type entityType, string dataMemberName)
-        {
-            return string.Format("{0}.{1}.{2}.{3}", EntityKeyPrefix, entityType.Name, entityId, dataMemberName);
+			return dataMemberInfos[0].GetValue<string>(entity);
 		}
 
-        private static List<string> GetEntityKeys(object entity)
-        {
-            string entityId = GetEntityId(entity);
-            Type entityType = entity.GetType();
-            return GetEntityKeys(entityType, entityId);
-        }
+		private static void SetEntityId(object entity, string entityId)
+		{
+			Type entityType = entity.GetType();
+			List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithEntityIdAttribute(entityType);
 
-        private static List<string> GetEntityKeys(Type entityType, string entityId)
-        {
-            List<string> entityKeys = new List<string>();
-            foreach (DataMemberInfo dataMemberInfo in PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType))
-                entityKeys.Add(GetFieldKey(entityId, entityType, dataMemberInfo));
-            return entityKeys;
-        }
+			if (dataMemberInfos.Count == 0)
+				throw new Exception(string.Format("Entity {0} doesn't contain EntityId attribute.", entityType));
 
-        private static string GetFieldKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
-        {
-            string entityId = GetEntityId(entity);
-            MemberExpression memberExpression = expr.Body as MemberExpression;
-            return GetFieldKey(entityId, typeof(TEntity), memberExpression.Member.Name);
-        }
+			if (dataMemberInfos.Count > 1)
+				throw new Exception(string.Format("Entity {0} contains more than one EntityId attribute.", entityType));
 
-        #region Public API
+			dataMemberInfos[0].SetValue(entity, entityId);
+		}
 
-        public static void Save(object entity)
-        {
-            string entityId = GetEntityId(entity);
-            Type entityType = entity.GetType();
-            List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType);
-            foreach (DataMemberInfo dataMemberInfo in dataMemberInfos)
-            {
-                string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
-                Type fieldType = dataMemberInfo.GetMemberInfoType();
-                PlayerPrefsFieldHandler fieldHandler = PlayerPrefsFieldFactory.Get(fieldType);
-                fieldHandler.SetValue(fieldKey, dataMemberInfo, entity);
-            }
-            PlayerPrefs.Save();
-        }
+		private static string GetFieldKey(string entityId, Type entityType, DataMemberInfo dataMemberInfo)
+		{
+			return GetFieldKey(entityId, entityType, dataMemberInfo.GetName());
+		}
 
-        #region Loading
+		private static string GetFieldKey(string entityId, Type entityType, string dataMemberName)
+		{
+			return string.Format("{0}.{1}.{2}.{3}", EntityKeyPrefix, entityType.Name, entityId, dataMemberName);
+		}
 
-        public static void Load(object entity)
-        {
-            string entityId = GetEntityId(entity);
-            Load(entity, entityId);
-        }
+		private static List<string> GetEntityKeys(object entity)
+		{
+			string entityId = GetEntityId(entity);
+			Type entityType = entity.GetType();
+			return GetEntityKeys(entityType, entityId);
+		}
 
-        public static void Load(object entity, string entityId)
-        {
-            Type entityType = entity.GetType();
-            List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType);
-            foreach (DataMemberInfo dataMemberInfo in dataMemberInfos)
-            {
-                string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
-                Type fieldType = dataMemberInfo.GetMemberInfoType();
-                if (PlayerPrefs.HasKey(fieldKey))
-                {
-                    PlayerPrefsFieldHandler fieldHandler = PlayerPrefsFieldFactory.Get(fieldType);
-                    dataMemberInfo.SetValue(entity, fieldHandler.GetValue(fieldKey));
-                }
-            }
-        }
+		private static List<string> GetEntityKeys(Type entityType, string entityId)
+		{
+			List<string> entityKeys = new List<string>();
+			foreach (DataMemberInfo dataMemberInfo in PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType))
+				entityKeys.Add(GetFieldKey(entityId, entityType, dataMemberInfo));
+			return entityKeys;
+		}
 
-        public static void Load(object[] entities)
-        {
-            foreach (object entity in entities)
-                Load(entity);
-        }
+		private static string GetFieldKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
+		{
+			string entityId = GetEntityId(entity);
+			MemberExpression memberExpression = expr.Body as MemberExpression;
+			return GetFieldKey(entityId, typeof(TEntity), memberExpression.Member.Name);
+		}
 
-        public static TEntity Load<TEntity>()
-            where TEntity : new()
-        {
-            TEntity entity = new TEntity();
-            Load(entity);
-            return entity;
-        }
+		#region Public API
 
-        public static TEntity Load<TEntity>(string entityId)
-            where TEntity : new()
-        {
-            TEntity entity = new TEntity();
-            Load(entity, entityId);
-            SetEntityId(entity, entityId);
-            return entity;
-        }
+		public static void Save(object entity)
+		{
+			string entityId = GetEntityId(entity);
+			Type entityType = entity.GetType();
+			List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType);
+			foreach (DataMemberInfo dataMemberInfo in dataMemberInfos)
+			{
+				string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
+				Type fieldType = dataMemberInfo.GetMemberInfoType();
+				PlayerPrefsFieldHandler fieldHandler = PlayerPrefsFieldFactory.Get(fieldType);
+				fieldHandler.SetValue(fieldKey, dataMemberInfo, entity);
+			}
+			PlayerPrefs.Save();
+		}
 
-        #endregion
+		#region Loading
 
-        #region Deleting
+		public static void Load(object entity)
+		{
+			string entityId = GetEntityId(entity);
+			Load(entity, entityId);
+		}
 
-        public static void Delete(object entity)
-        {
-            foreach (string entityKey in GetEntityKeys(entity))
-                PlayerPrefs.DeleteKey(entityKey);
-            PlayerPrefs.Save();
-        }
+		public static void Load(object entity, string entityId)
+		{
+			Type entityType = entity.GetType();
+			List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithFieldAttribute(entityType);
+			foreach (DataMemberInfo dataMemberInfo in dataMemberInfos)
+			{
+				string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
+				Type fieldType = dataMemberInfo.GetMemberInfoType();
+				if (PlayerPrefs.HasKey(fieldKey))
+				{
+					PlayerPrefsFieldHandler fieldHandler = PlayerPrefsFieldFactory.Get(fieldType);
+					dataMemberInfo.SetValue(entity, fieldHandler.GetValue(fieldKey));
+				}
+			}
+		}
 
-        public static void Delete<TEntity>(string entityId)
-        {
-            foreach (string entityKey in GetEntityKeys(typeof(TEntity), entityId))
-                PlayerPrefs.DeleteKey(entityKey);
-            PlayerPrefs.Save();
-        }
+		public static void Load(object[] entities)
+		{
+			foreach (object entity in entities)
+				Load(entity);
+		}
 
-        public static void DeleteSingle<TEntity>()
-        {
-            Delete<TEntity>(SingleEntityId);
-        }
+		public static TEntity Load<TEntity>()
+			where TEntity : new()
+		{
+			TEntity entity = new TEntity();
+			Load(entity);
+			return entity;
+		}
 
-        public static void Delete<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
-        {
-            string fieldKey = GetFieldKey(entity, expr);
-            PlayerPrefs.DeleteKey(fieldKey);
-            PlayerPrefs.Save();
-        }
+		public static TEntity Load<TEntity>(string entityId)
+			where TEntity : new()
+		{
+			TEntity entity = new TEntity();
+			Load(entity, entityId);
+			SetEntityId(entity, entityId);
+			return entity;
+		}
 
-        #endregion
+		#endregion
 
-        #region Checking
+		#region Deleting
 
-        public static bool HasKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
-        {
-            string fieldKey = GetFieldKey(entity, expr);
-            return PlayerPrefs.HasKey(fieldKey);
-        }
+		public static void Delete(object entity)
+		{
+			foreach (string entityKey in GetEntityKeys(entity))
+				PlayerPrefs.DeleteKey(entityKey);
+			PlayerPrefs.Save();
+		}
 
-        public static bool Exists<TEntity>(string entityId)
-        {
-            foreach (string entityKey in GetEntityKeys(typeof(TEntity), entityId))
-                if (PlayerPrefs.HasKey(entityKey))
-                    return true;
-            return false;
-        }
+		public static void Delete<TEntity>(string entityId)
+		{
+			foreach (string entityKey in GetEntityKeys(typeof(TEntity), entityId))
+				PlayerPrefs.DeleteKey(entityKey);
+			PlayerPrefs.Save();
+		}
 
-        public static bool ExistsSingle<TEntity>()
-        {
-            return Exists<TEntity>(SingleEntityId);
-        }
+		public static void DeleteSingle<TEntity>()
+		{
+			Delete<TEntity>(SingleEntityId);
+		}
 
-        #endregion
+		public static void Delete<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
+		{
+			string fieldKey = GetFieldKey(entity, expr);
+			PlayerPrefs.DeleteKey(fieldKey);
+			PlayerPrefs.Save();
+		}
 
-        #endregion
+		#endregion
 
-        private static class PlayerPrefsCache
-        {
-            private static Dictionary<Type, List<DataMemberInfo>> _dataMemberInfosFieldCache = new Dictionary<Type, List<DataMemberInfo>>();
-            private static Dictionary<Type, List<DataMemberInfo>> _dataMemberInfosEntityIdCache = new Dictionary<Type, List<DataMemberInfo>>();
+		#region Checking
 
-            public static List<DataMemberInfo> GetDataMemberInfoWithFieldAttribute(Type type)
-            {
-                if (!_dataMemberInfosFieldCache.ContainsKey(type))
-                    _dataMemberInfosFieldCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsFieldAttribute>(type));
-                return _dataMemberInfosFieldCache[type];
-            }
+		public static bool HasKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
+		{
+			string fieldKey = GetFieldKey(entity, expr);
+			return PlayerPrefs.HasKey(fieldKey);
+		}
 
-            public static List<DataMemberInfo> GetDataMemberInfoWithEntityIdAttribute(Type type)
-            {
-                if (!_dataMemberInfosEntityIdCache.ContainsKey(type))
-                    _dataMemberInfosEntityIdCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsEntityIdAttribute>(type));
-                return _dataMemberInfosEntityIdCache[type];
-            }
+		public static bool Exists<TEntity>(string entityId)
+		{
+			foreach (string entityKey in GetEntityKeys(typeof(TEntity), entityId))
+				if (PlayerPrefs.HasKey(entityKey))
+					return true;
+			return false;
+		}
 
-            private static List<DataMemberInfo> GetDataMemberInfoWithAttribute<TAttribute>(Type type)
-                where TAttribute : Attribute
-            {
-                List<DataMemberInfo> dataMemberInfos = new List<DataMemberInfo>();
+		public static bool ExistsSingle<TEntity>()
+		{
+			return Exists<TEntity>(SingleEntityId);
+		}
 
-                dataMemberInfos.AddRange(type.GetFields()
-                    .Where(fi => fi.GetCustomAttributes(typeof(TAttribute), true).Any())
-                    .Select(fieldInfo => new DataMemberInfo(fieldInfo)));
+		#endregion
 
-                dataMemberInfos.AddRange(type.GetProperties()
-                    .Where(pi => pi.GetCustomAttributes(typeof(TAttribute), true).Any())
-                    .Select(propertyInfo => new DataMemberInfo(propertyInfo)));
+		#endregion
 
-                return dataMemberInfos;
-            }
-        }
-    }
+		private static class PlayerPrefsCache
+		{
+			private static Dictionary<Type, List<DataMemberInfo>> _dataMemberInfosFieldCache = new Dictionary<Type, List<DataMemberInfo>>();
+			private static Dictionary<Type, List<DataMemberInfo>> _dataMemberInfosEntityIdCache = new Dictionary<Type, List<DataMemberInfo>>();
+
+			public static List<DataMemberInfo> GetDataMemberInfoWithFieldAttribute(Type type)
+			{
+				if (!_dataMemberInfosFieldCache.ContainsKey(type))
+					_dataMemberInfosFieldCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsFieldAttribute>(type));
+				return _dataMemberInfosFieldCache[type];
+			}
+
+			public static List<DataMemberInfo> GetDataMemberInfoWithEntityIdAttribute(Type type)
+			{
+				if (!_dataMemberInfosEntityIdCache.ContainsKey(type))
+					_dataMemberInfosEntityIdCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsEntityIdAttribute>(type));
+				return _dataMemberInfosEntityIdCache[type];
+			}
+
+			private static List<DataMemberInfo> GetDataMemberInfoWithAttribute<TAttribute>(Type type)
+				where TAttribute : Attribute
+			{
+				List<DataMemberInfo> dataMemberInfos = new List<DataMemberInfo>();
+
+				dataMemberInfos.AddRange(type.GetFields()
+					.Where(fi => fi.GetCustomAttributes(typeof(TAttribute), true).Any())
+					.Select(fieldInfo => new DataMemberInfo(fieldInfo)));
+
+				dataMemberInfos.AddRange(type.GetProperties()
+					.Where(pi => pi.GetCustomAttributes(typeof(TAttribute), true).Any())
+					.Select(propertyInfo => new DataMemberInfo(propertyInfo)));
+
+				return dataMemberInfos;
+			}
+		}
+	}
 }
