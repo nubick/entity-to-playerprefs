@@ -1,4 +1,15 @@
 {
-	"dependencies": {
-	}
+  "dependencies": {
+    "com.unity.2d.sprite": "1.0.0",
+    "com.unity.ide.rider": "1.1.0",
+    "com.unity.package-manager-ui": "2.2.0",
+    "com.unity.ugui": "1.0.0",
+    "com.unity.modules.animation": "1.0.0",
+    "com.unity.modules.imageconversion": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.jsonserialize": "1.0.0",
+    "com.unity.modules.physics": "1.0.0",
+    "com.unity.modules.physics2d": "1.0.0",
+    "com.unity.modules.ui": "1.0.0"
+  }
 }
