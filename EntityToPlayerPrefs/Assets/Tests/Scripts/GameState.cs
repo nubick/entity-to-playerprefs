@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Assets.Plugins.EntityToPlayerPrefs;
 using UnityEngine;
 
@@ -24,6 +25,18 @@ namespace Assets.Tests.Scripts
         [PlayerPrefsField] public GameMode GameMode;
         [PlayerPrefsField] public PurchaseMode PurchaseMode { get; set; }
 
+        [PlayerPrefsField] public List<int> ItemIds;
+        [PlayerPrefsField] public List<int> CharacterIds { get; set; }
+
+        [PlayerPrefsField] public List<string> Names;
+        [PlayerPrefsField] public List<string> Titles { get; set; }
+
+        [PlayerPrefsField] public Vector2 Center;
+        [PlayerPrefsField] public Vector2 TopLeft { get; set; }
+
+        [PlayerPrefsField] public Vector3 Point;
+        [PlayerPrefsField] public Vector3 Position { get; set; }
+        
         public void Awake()
         {
             PlayerPrefsMapper.Load(this);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using Assets.Plugins.EntityToPlayerPrefs;
@@ -20,7 +21,7 @@ namespace Assets.Tests.Scripts
             gameState.FirstName = GetRandomString();
             gameState.LastName = GetRandomString();
 
-            gameState.HasSubscription = Random.Range(0,2) == 0;
+            gameState.HasSubscription = Random.Range(0, 2) == 0;
             gameState.WasGameRated = Random.Range(0, 2) == 0;
 
             gameState.Lifes = Random.Range(int.MinValue, int.MaxValue);
@@ -34,6 +35,28 @@ namespace Assets.Tests.Scripts
 
             gameState.GameMode = GetRandomEnum<GameMode>();
             gameState.PurchaseMode = GetRandomEnum<PurchaseMode>();
+
+            gameState.ItemIds = new List<int>();
+            for (int i = 0; i < Random.Range(1, 100); i++)
+                gameState.ItemIds.Add(Random.Range(1, 100));
+
+            gameState.CharacterIds = new List<int>();
+            for (int i = 0; i < Random.Range(1, 100); i++)
+                gameState.CharacterIds.Add(Random.Range(1, 100));
+
+            gameState.Names = new List<string>();
+            for (int i = 0; i < Random.Range(1, 100); i++)
+                gameState.Names.Add(GetRandomString());
+
+            gameState.Titles = new List<string>();
+            for (int i = 0; i < Random.Range(1, 100); i++)
+                gameState.Titles.Add(GetRandomString());
+
+            gameState.Center = new Vector2(Random.Range(-100f, 100f), Random.Range(-100f, 100f));
+            gameState.TopLeft = new Vector2(Random.Range(-100f, 100f), Random.Range(-100f, 100f));
+
+            gameState.Point = new Vector3(Random.Range(-100f, 100f), Random.Range(-100f, 100f), Random.Range(-100f, 100f));
+            gameState.Position = new Vector3(Random.Range(-100f, 100f), Random.Range(-100f, 100f), Random.Range(-100f, 100f));
         }
 
         public void SaveRandomGameState()
