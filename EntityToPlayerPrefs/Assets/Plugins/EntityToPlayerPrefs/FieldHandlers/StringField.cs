@@ -1,17 +1,15 @@
-﻿using UnityEngine;
-
-namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
+﻿namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 {
     class StringFieldHandler : PlayerPrefsFieldHandler
     {
         public override object GetValue(string fieldKey)
         {
-            return PlayerPrefs.GetString(fieldKey);
+            return PlayerPrefsProvider.GetString(fieldKey);
         }
 
         public override void SetValue(string fieldKey, DataMemberInfo dataMemberInfo, object entity)
         {
-            PlayerPrefs.SetString(fieldKey, dataMemberInfo.GetValue<string>(entity));
+            PlayerPrefsProvider.SetString(fieldKey, dataMemberInfo.GetValue<string>(entity));
         }
     }
 }

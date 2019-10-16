@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 {
@@ -17,7 +16,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 		private static List<string> GetListOfStrings(string fieldKey)
 		{
 			//Format: __ls.23;43;53
-			string valueString = PlayerPrefs.GetString(fieldKey, ValuePrefix);
+			string valueString = PlayerPrefsProvider.GetString(fieldKey, ValuePrefix);
 			valueString = valueString.Substring(5);//remove prefix
 			return string.IsNullOrEmpty(valueString) ? new List<string>() : valueString.Split(';').ToList();
 		}
@@ -28,12 +27,12 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 
 			if (list == null || list.Count == 0)
 			{
-				PlayerPrefs.DeleteKey(fieldKey);
+				PlayerPrefsProvider.DeleteKey(fieldKey);
 			}
 			else
 			{
 				string listStringValue = $"{ValuePrefix}{string.Join(";", list)}";
-				PlayerPrefs.SetString(fieldKey, listStringValue);
+				PlayerPrefsProvider.SetString(fieldKey, listStringValue);
 			}
 		}
 	}

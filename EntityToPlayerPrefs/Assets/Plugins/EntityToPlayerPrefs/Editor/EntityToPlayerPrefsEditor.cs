@@ -59,7 +59,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 				{
 					object ppValue = registryKey.GetValue(valueName);
 					string ppKey = valueName.Remove(valueName.LastIndexOf("_"));
-					if (PlayerPrefs.HasKey(ppKey))
+					if (PlayerPrefsProvider.HasKey(ppKey))
 						values.Add(ppKey, ppValue);
 				}
 			}
@@ -84,7 +84,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 			{
 				plistDic = (Dictionary<string, object>)Plist.readPlist(fullPath);
 				foreach (string key in plistDic.Keys.ToArray())
-					if (!PlayerPrefs.HasKey(key))
+					if (!PlayerPrefsProvider.HasKey(key))
 						plistDic.Remove(key);
 			}
 			return plistDic;
@@ -180,7 +180,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 			if (GUILayout.Button("Delete", GUILayout.Width(50)))
 			{
 				DeleteEntity(entity);
-				PlayerPrefs.Save();
+				PlayerPrefsProvider.Save();
 				Refresh();
 			}
 			GUILayout.EndHorizontal();
@@ -207,35 +207,35 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 				}
 				else
 				{
-					string oldValue = PlayerPrefs.GetString(ppKey);
+					string oldValue = PlayerPrefsProvider.GetString(ppKey);
 					string newValue = EditorGUILayout.TextField(oldValue);
 					if (newValue != oldValue)
 					{
-						PlayerPrefs.SetString(ppKey, newValue);
-						PlayerPrefs.Save();
+						PlayerPrefsProvider.SetString(ppKey, newValue);
+						PlayerPrefsProvider.Save();
 						hasChanges = true;
 					}
 				}
 			}
 			else if (valueType == ValueType.Int)
 			{
-				int oldValue = PlayerPrefs.GetInt(ppKey);
+				int oldValue = PlayerPrefsProvider.GetInt(ppKey);
 				int newValue = EditorGUILayout.IntField(oldValue);
 				if (newValue != oldValue)
 				{
-					PlayerPrefs.SetInt(ppKey, newValue);
-					PlayerPrefs.Save();
+					PlayerPrefsProvider.SetInt(ppKey, newValue);
+					PlayerPrefsProvider.Save();
 					hasChanges = true;
 				}
 			}
 			else if (valueType == ValueType.Float)
 			{
-				float oldValue = PlayerPrefs.GetFloat(ppKey);
+				float oldValue = PlayerPrefsProvider.GetFloat(ppKey);
 				float newValue = EditorGUILayout.FloatField(oldValue);
 				if (!Mathf.Approximately(oldValue, newValue))
 				{
-					PlayerPrefs.SetFloat(ppKey, newValue);
-					PlayerPrefs.Save();
+					PlayerPrefsProvider.SetFloat(ppKey, newValue);
+					PlayerPrefsProvider.Save();
 					hasChanges = true;
 				}
 			}
@@ -245,8 +245,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 
 			if (GUILayout.Button("X", GUILayout.Width(50)))
 			{
-				PlayerPrefs.DeleteKey(ppKey);
-				PlayerPrefs.Save();
+				PlayerPrefsProvider.DeleteKey(ppKey);
+				PlayerPrefsProvider.Save();
 				Refresh();
 			}
 
@@ -273,11 +273,11 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 
 		private bool IsInt(string ppKey)
 		{
-			int intValue = PlayerPrefs.GetInt(ppKey);
+			int intValue = PlayerPrefsProvider.GetInt(ppKey);
 			if (intValue != 0)
 				return true;
 
-			float floatValue = PlayerPrefs.GetFloat(ppKey);
+			float floatValue = PlayerPrefsProvider.GetFloat(ppKey);
 			if (!Mathf.Approximately(floatValue, 0f))
 				return false;
 
@@ -287,7 +287,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 		private void DeleteEntity(PPEntity entity)
 		{
 			foreach (string ppKey in entity.PPKeys.Values)
-				PlayerPrefs.DeleteKey(ppKey);
+				PlayerPrefsProvider.DeleteKey(ppKey);
 		}
 
 		#region Bottom Panel
@@ -338,7 +338,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 					if (_selectedType == NotEntitiesTab)
 					{
 						foreach (string ppKey in GetNoEntitiesKeys())
-							PlayerPrefs.DeleteKey(ppKey);
+							PlayerPrefsProvider.DeleteKey(ppKey);
 					}
 					else
 					{
@@ -347,7 +347,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 						_selectedType = NotEntitiesTab;
 					}
 
-					PlayerPrefs.Save();
+					PlayerPrefsProvider.Save();
 					Refresh();
 				}
 			}
@@ -359,8 +359,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 			{
 				if (EditorUtility.DisplayDialog("Delete all records", "All records on all tabs will be deleted!", "Delete", "Cancel"))
 				{
-					PlayerPrefs.DeleteAll();
-					PlayerPrefs.Save();
+					PlayerPrefsProvider.DeleteAll();
+					PlayerPrefsProvider.Save();
 					Refresh();
 					_selectedType = NotEntitiesTab;
 				}
@@ -470,18 +470,18 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 		private string GetValueAsString(string ppKey, ValueType valueType)
 		{
 			if (valueType == ValueType.String)
-				return PlayerPrefs.GetString(ppKey);
+				return PlayerPrefsProvider.GetString(ppKey);
 			else if (valueType == ValueType.Int)
-				return PlayerPrefs.GetInt(ppKey).ToString();
+				return PlayerPrefsProvider.GetInt(ppKey).ToString();
 			else if (valueType == ValueType.Float)
-				return PlayerPrefs.GetFloat(ppKey).ToString();
+				return PlayerPrefsProvider.GetFloat(ppKey).ToString();
 
 			throw new Exception("Not supported recordType: " + valueType);
 		}
 
 		private void LoadState(PlayerPrefsState stateStorage)
 		{
-			PlayerPrefs.DeleteAll();
+			PlayerPrefsProvider.DeleteAll();
 			for (int i = 0; i < stateStorage.PPKeys.Count; i++)
 			{
 				ValueType valueType = stateStorage.ValueTypes[i];
@@ -490,20 +490,20 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 
 				if (valueType == ValueType.String)
 				{
-					PlayerPrefs.SetString(ppKey, stringValue);
+					PlayerPrefsProvider.SetString(ppKey, stringValue);
 				}
 				else if (valueType == ValueType.Int)
 				{
 					int intValue = int.Parse(stringValue);
-					PlayerPrefs.SetInt(ppKey, intValue);
+					PlayerPrefsProvider.SetInt(ppKey, intValue);
 				}
 				else if (valueType == ValueType.Float)
 				{
 					float floatValue = float.Parse(stringValue);
-					PlayerPrefs.SetFloat(ppKey, floatValue);
+					PlayerPrefsProvider.SetFloat(ppKey, floatValue);
 				}
 			}
-			PlayerPrefs.Save();
+			PlayerPrefsProvider.Save();
 		}
 
 		#endregion
@@ -603,8 +603,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs.Editor
 			if (shouldBeCleared && playModeStateChange == PlayModeStateChange.ExitingEditMode)
 			{
 				Debug.Log("Entity to PlayerPrefs. Editor mode settings: clear All on start.");
-				PlayerPrefs.DeleteAll();
-				PlayerPrefs.Save();
+				PlayerPrefsProvider.DeleteAll();
+				PlayerPrefsProvider.Save();
 			}
 		}
 	}

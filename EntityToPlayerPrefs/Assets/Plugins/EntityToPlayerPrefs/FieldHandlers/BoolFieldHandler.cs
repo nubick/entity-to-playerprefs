@@ -1,10 +1,4 @@
-﻿using UnityEngine;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
-namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
+﻿namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 {
     public class BoolFieldHandler : PlayerPrefsFieldHandler
     {
@@ -17,7 +11,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 
         private static bool GetBool(string fieldKey)
         {
-            string valueString = PlayerPrefs.GetString(fieldKey);
+            string valueString = PlayerPrefsProvider.GetString(fieldKey);
 
             string boolString;
             if (valueString.StartsWith(ValuePrefix))
@@ -35,24 +29,23 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 
         private static void SetBoolValue(string fieldKey, bool boolValue)
         {
-            PlayerPrefs.SetString(fieldKey, ValuePrefix + boolValue);
+            PlayerPrefsProvider.SetString(fieldKey, ValuePrefix + boolValue);
         }
 
 #if UNITY_EDITOR
-
         public static bool IsBoolRecord(string fieldKey)
         {
-            return PlayerPrefs.GetString(fieldKey).StartsWith(ValuePrefix);
+            return PlayerPrefsProvider.GetString(fieldKey).StartsWith(ValuePrefix);
         }
 
         public static bool DrawEditor(string fieldKey)
         {
             bool boolValue = GetBool(fieldKey);
-            bool newBoolValue = EditorGUILayout.Toggle(boolValue);
+            bool newBoolValue = UnityEditor.EditorGUILayout.Toggle(boolValue);
             if (newBoolValue != boolValue)
             {
                 SetBoolValue(fieldKey, newBoolValue);
-                PlayerPrefs.Save();
+                PlayerPrefsProvider.Save();
                 return true;
             }
             return false;

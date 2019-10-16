@@ -86,7 +86,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 				PlayerPrefsFieldHandler fieldHandler = PlayerPrefsFieldFactory.Get(fieldType);
 				fieldHandler.SetValue(fieldKey, dataMemberInfo, entity);
 			}
-			PlayerPrefs.Save();
+			PlayerPrefsProvider.Save();
 		}
 
 		#region Loading
@@ -105,7 +105,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 			{
 				string fieldKey = GetFieldKey(entityId, entityType, dataMemberInfo);
 				Type fieldType = dataMemberInfo.GetMemberInfoType();
-				if (PlayerPrefs.HasKey(fieldKey))
+				if (PlayerPrefsProvider.HasKey(fieldKey))
 				{
 					PlayerPrefsFieldHandler fieldHandler = PlayerPrefsFieldFactory.Get(fieldType);
 					dataMemberInfo.SetValue(entity, fieldHandler.GetValue(fieldKey));
@@ -143,15 +143,15 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 		public static void Delete(object entity)
 		{
 			foreach (string entityKey in GetEntityKeys(entity))
-				PlayerPrefs.DeleteKey(entityKey);
-			PlayerPrefs.Save();
+				PlayerPrefsProvider.DeleteKey(entityKey);
+			PlayerPrefsProvider.Save();
 		}
 
 		public static void Delete<TEntity>(string entityId)
 		{
 			foreach (string entityKey in GetEntityKeys(typeof(TEntity), entityId))
-				PlayerPrefs.DeleteKey(entityKey);
-			PlayerPrefs.Save();
+				PlayerPrefsProvider.DeleteKey(entityKey);
+			PlayerPrefsProvider.Save();
 		}
 
 		public static void DeleteSingle<TEntity>()
@@ -162,8 +162,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 		public static void Delete<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
 		{
 			string fieldKey = GetFieldKey(entity, expr);
-			PlayerPrefs.DeleteKey(fieldKey);
-			PlayerPrefs.Save();
+			PlayerPrefsProvider.DeleteKey(fieldKey);
+			PlayerPrefsProvider.Save();
 		}
 
 		#endregion
@@ -173,13 +173,13 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 		public static bool HasKey<TEntity, TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> expr)
 		{
 			string fieldKey = GetFieldKey(entity, expr);
-			return PlayerPrefs.HasKey(fieldKey);
+			return PlayerPrefsProvider.HasKey(fieldKey);
 		}
 
 		public static bool Exists<TEntity>(string entityId)
 		{
 			foreach (string entityKey in GetEntityKeys(typeof(TEntity), entityId))
-				if (PlayerPrefs.HasKey(entityKey))
+				if (PlayerPrefsProvider.HasKey(entityKey))
 					return true;
 			return false;
 		}

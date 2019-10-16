@@ -15,7 +15,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
         private static Vector3 GetVector3(string fieldKey)
         {
             //Format: __v3.2345.432;234.532;2.23
-            string valueString = PlayerPrefs.GetString(fieldKey);
+            string valueString = PlayerPrefsProvider.GetString(fieldKey);
             valueString = valueString.Substring(5);//remove prefix
             string[] coordinates = valueString.Split(';');
             float x = float.Parse(coordinates[0], CultureInfo.InvariantCulture.NumberFormat);
@@ -28,7 +28,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
         {
             Vector3 vector3 = dataMemberInfo.GetValue<Vector3>(entity);
             string vector3String = string.Format(CultureInfo.InvariantCulture.NumberFormat, "{0}{1};{2};{3}", ValuePrefix, vector3.x, vector3.y, vector3.z);
-            PlayerPrefs.SetString(fieldKey, vector3String);
+            PlayerPrefsProvider.SetString(fieldKey, vector3String);
         }
     }
 }

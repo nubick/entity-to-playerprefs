@@ -15,7 +15,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 		private static Vector2 GetVector2(string fieldKey)
 		{
 			//Format: __v2.2345.432;234.532
-			string valueString = PlayerPrefs.GetString(fieldKey);
+			string valueString = PlayerPrefsProvider.GetString(fieldKey);
 			valueString = valueString.Substring(5);//remove prefix
 			string[] coordinates = valueString.Split(';');
 			float x = float.Parse(coordinates[0], CultureInfo.InvariantCulture.NumberFormat);
@@ -27,7 +27,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs.FieldHandlers
 		{
 			Vector2 vector2 = dataMemberInfo.GetValue<Vector2>(entity);
 			string vector2String = string.Format(CultureInfo.InvariantCulture.NumberFormat, "{0}{1};{2}", ValuePrefix, vector2.x, vector2.y);
-			PlayerPrefs.SetString(fieldKey, vector2String);
+			PlayerPrefsProvider.SetString(fieldKey, vector2String);
 		}
 	}
 }
