@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Assets.Plugins.EntityToPlayerPrefs.FieldHandlers;
-using UnityEngine;
 
 namespace Assets.Plugins.EntityToPlayerPrefs
 {
@@ -21,7 +20,7 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 				return SingleEntityId;
 
 			if (dataMemberInfos.Count > 1)
-				throw new Exception(string.Format("Entity {0} contains more than one EntityId attribute.", entityType));
+				throw new Exception($"Entity {entityType} contains more than one EntityId attribute.");
 
 			return dataMemberInfos[0].GetValue<string>(entity);
 		}
@@ -32,10 +31,10 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 			List<DataMemberInfo> dataMemberInfos = PlayerPrefsCache.GetDataMemberInfoWithEntityIdAttribute(entityType);
 
 			if (dataMemberInfos.Count == 0)
-				throw new Exception(string.Format("Entity {0} doesn't contain EntityId attribute.", entityType));
+				throw new Exception($"Entity {entityType} doesn't contain EntityId attribute.");
 
 			if (dataMemberInfos.Count > 1)
-				throw new Exception(string.Format("Entity {0} contains more than one EntityId attribute.", entityType));
+				throw new Exception($"Entity {entityType} contains more than one EntityId attribute.");
 
 			dataMemberInfos[0].SetValue(entity, entityId);
 		}
@@ -47,7 +46,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 
 		private static string GetFieldKey(string entityId, Type entityType, string dataMemberName)
 		{
-			return string.Format("{0}.{1}.{2}.{3}", EntityKeyPrefix, entityType.Name, entityId, dataMemberName);
+			string entityName = PlayerPrefsCache.GetEntityName(entityType);
+			return $"{EntityKeyPrefix}.{entityName}.{entityId}.{dataMemberName}";
 		}
 
 		private static List<string> GetEntityKeys(object entity)
@@ -195,21 +195,22 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 
 		private static class PlayerPrefsCache
 		{
-			private static Dictionary<Type, List<DataMemberInfo>> _dataMemberInfosFieldCache = new Dictionary<Type, List<DataMemberInfo>>();
-			private static Dictionary<Type, List<DataMemberInfo>> _dataMemberInfosEntityIdCache = new Dictionary<Type, List<DataMemberInfo>>();
+			private static readonly Dictionary<Type, List<DataMemberInfo>> DataMemberInfosFieldCache = new Dictionary<Type, List<DataMemberInfo>>();
+			private static readonly Dictionary<Type, List<DataMemberInfo>> DataMemberInfosEntityIdCache = new Dictionary<Type, List<DataMemberInfo>>();
+			private static readonly Dictionary<Type, string> EntityNameCache = new Dictionary<Type, string>();
 
 			public static List<DataMemberInfo> GetDataMemberInfoWithFieldAttribute(Type type)
 			{
-				if (!_dataMemberInfosFieldCache.ContainsKey(type))
-					_dataMemberInfosFieldCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsFieldAttribute>(type));
-				return _dataMemberInfosFieldCache[type];
+				if (!DataMemberInfosFieldCache.ContainsKey(type))
+					DataMemberInfosFieldCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsFieldAttribute>(type));
+				return DataMemberInfosFieldCache[type];
 			}
 
 			public static List<DataMemberInfo> GetDataMemberInfoWithEntityIdAttribute(Type type)
 			{
-				if (!_dataMemberInfosEntityIdCache.ContainsKey(type))
-					_dataMemberInfosEntityIdCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsEntityIdAttribute>(type));
-				return _dataMemberInfosEntityIdCache[type];
+				if (!DataMemberInfosEntityIdCache.ContainsKey(type))
+					DataMemberInfosEntityIdCache.Add(type, GetDataMemberInfoWithAttribute<PlayerPrefsEntityIdAttribute>(type));
+				return DataMemberInfosEntityIdCache[type];
 			}
 
 			private static List<DataMemberInfo> GetDataMemberInfoWithAttribute<TAttribute>(Type type)
@@ -226,6 +227,17 @@ namespace Assets.Plugins.EntityToPlayerPrefs
 					.Select(propertyInfo => new DataMemberInfo(propertyInfo)));
 
 				return dataMemberInfos;
+			}
+
+			public static string GetEntityName(Type type)
+			{
+				if (!EntityNameCache.ContainsKey(type))
+				{
+					PlayerPrefsEntityNameAttribute attribute = Attribute.GetCustomAttribute(type, typeof(PlayerPrefsEntityNameAttribute)) as PlayerPrefsEntityNameAttribute;
+					string name = attribute == null ? type.Name : attribute.Name;
+					EntityNameCache.Add(type, name);
+				}
+				return EntityNameCache[type];
 			}
 		}
 	}

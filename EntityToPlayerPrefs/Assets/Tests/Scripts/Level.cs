@@ -3,6 +3,7 @@ using Assets.Plugins.EntityToPlayerPrefs;
 
 namespace Assets.Tests.Scripts
 {
+    [PlayerPrefsEntityName("NewLevel")]
     public class Level : MonoBehaviour
     {
         [PlayerPrefsEntityId] public string Id => Number.ToString();
