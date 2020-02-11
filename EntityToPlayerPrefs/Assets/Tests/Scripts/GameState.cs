@@ -39,6 +39,7 @@ namespace Assets.Tests.Scripts
         
         public void Awake()
         {
+            PlayerPrefsProvider.SetProvider(new FilePlayerPrefsProvider());
             PlayerPrefsMapper.Load(this);
             Debug.Log("SubscriptionEndDate: " + SubscriptionEndDate);
             Debug.Log("LastDailyRewardDate: " + LastDailyRewardDate);
