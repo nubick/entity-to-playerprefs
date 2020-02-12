@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
-#if UNITY_EDITOR
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using System.IO;
 using System.Linq;
 using Microsoft.Win32;
@@ -63,6 +63,8 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             PlayerPrefs.Save();
         }
 
+
+#if UNITY_EDITOR
         public Dictionary<string, object> GetAllKeysAndValues()
         {
             Dictionary<string, object> _keyValueDic = null;
@@ -74,8 +76,6 @@ namespace Assets.Plugins.EntityToPlayerPrefs
                 Debug.Log("Not supported platform: " + Application.platform);
             return _keyValueDic;
         }
-
-#if UNITY_EDITOR
         private Dictionary<string, object> LoadForWindows()
         {
             Dictionary<string, object> values = new Dictionary<string, object>();
@@ -118,7 +118,13 @@ namespace Assets.Plugins.EntityToPlayerPrefs
             }
             return plistDic;
         }
-
+#else
+        // An empty implement for runtime, since PlayerPref only possible to get all key and value in Editor
+        public Dictionary<string, object> GetAllKeysAndValues()
+        {
+            Dictionary<string, object> _keyValueDic = null;
+            return _keyValueDic;
+        }
 #endif
     }
 }
