@@ -1,4 +1,13 @@
+using System;
 using UnityEngine;
+using System.Collections.Generic;
+#if UNITY_EDITOR
+using System.IO;
+using System.Linq;
+using Microsoft.Win32;
+using UnityEditor;
+using Assets.Plugins.EntityToPlayerPrefs.Editor;
+#endif
 
 namespace Assets.Plugins.EntityToPlayerPrefs
 {
@@ -53,5 +62,69 @@ namespace Assets.Plugins.EntityToPlayerPrefs
         {
             PlayerPrefs.Save();
         }
+
+
+#if UNITY_EDITOR
+        public Dictionary<string, object> GetAllKeysAndValues()
+        {
+            Dictionary<string, object> _keyValueDic = null;
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+                _keyValueDic = LoadForWindows();
+            else if (Application.platform == RuntimePlatform.OSXEditor)
+                _keyValueDic = LoadForMacOS();
+            else
+                Debug.Log("Not supported platform: " + Application.platform);
+            return _keyValueDic;
+        }
+        private Dictionary<string, object> LoadForWindows()
+        {
+            Dictionary<string, object> values = new Dictionary<string, object>();
+            string registryPath = GetWindowsRegestryPath();
+            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(registryPath);
+            //When there are no any records, OpenSubKey return null but not object with no values.
+            if (registryKey != null)
+            {
+                foreach (string valueName in registryKey.GetValueNames())
+                {
+                    object ppValue = registryKey.GetValue(valueName);
+                    string ppKey = valueName.Remove(valueName.LastIndexOf("_"));
+                    if (PlayerPrefsProvider.HasKey(ppKey))
+                        values.Add(ppKey, ppValue);
+                }
+            }
+            return values;
+        }
+
+        private string GetWindowsRegestryPath()
+        {
+#if UNITY_5_5_OR_NEWER
+            return string.Format("Software\\Unity\\UnityEditor\\{0}\\{1}", PlayerSettings.companyName, PlayerSettings.productName);
+#else
+            return string.Format("Software\\{0}\\{1}", PlayerSettings.companyName, PlayerSettings.productName);
+#endif
+        }
+
+        private Dictionary<string, object> LoadForMacOS()
+        {
+            // Plist from from https://github.com/animetrics/PlistCS:
+            string fullPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Library/Preferences/unity." + PlayerSettings.companyName + "." + PlayerSettings.productName + ".plist";
+            Dictionary<string, object> plistDic = new Dictionary<string, object>();
+            if (File.Exists(fullPath))
+            {
+                plistDic = (Dictionary<string, object>)Plist.readPlist(fullPath);
+                foreach (string key in plistDic.Keys.ToArray())
+                    if (!PlayerPrefsProvider.HasKey(key))
+                        plistDic.Remove(key);
+            }
+            return plistDic;
+        }
+#else
+        // An empty implement for runtime, since PlayerPref only possible to get all key and value in Editor
+        public Dictionary<string, object> GetAllKeysAndValues()
+        {
+            Dictionary<string, object> _keyValueDic = null;
+            return _keyValueDic;
+        }
+#endif
     }
 }

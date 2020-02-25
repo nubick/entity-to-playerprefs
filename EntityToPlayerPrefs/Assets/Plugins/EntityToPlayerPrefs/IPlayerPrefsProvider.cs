@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Assets.Plugins.EntityToPlayerPrefs
 {
     public interface IPlayerPrefsProvider
@@ -12,5 +14,6 @@ namespace Assets.Plugins.EntityToPlayerPrefs
         void DeleteKey(string key);
         void DeleteAll();
         void Save();
+        Dictionary<string, object> GetAllKeysAndValues();
     }
 }
